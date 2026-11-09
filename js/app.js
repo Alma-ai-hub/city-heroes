@@ -2,15 +2,21 @@
 
 const STORE_KEY = "city-heroes-v1";
 const app = document.getElementById("app");
+const plain = (s) => s.replace(/[֑-ׇ]/g, ""); // remove vowel marks for display
 
 // ---------- saving progress (in this browser) ----------
+function emptyZones() { return Object.fromEntries(ZONES.map((z) => [z.id, 0])); }
 function emptyPlayer() {
-  return { stars: 0, done: 0, zones: { letters: 0, reading: 0, writing: 0, numbers: 0 }, parts: [], powers: [], medals: 0 };
+  return { stars: 0, done: 0, zones: emptyZones(), parts: [], powers: [], medals: 0, at: "letters" };
 }
 function load() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
-    if (s && s.players) return s;
+    if (s && s.players) {
+      // Older saves don't know the newer places yet.
+      for (const p of Object.values(s.players)) { p.zones = { ...emptyZones(), ...p.zones }; p.at = p.at || "letters"; }
+      return s;
+    }
   } catch (e) { /* start fresh */ }
   return { players: { bar: emptyPlayer(), yarden: emptyPlayer() } };
 }
@@ -32,14 +38,14 @@ function rewardFor(k) {
 
 // ---------- little screen helpers ----------
 let cleanups = [];
-function clearScreen() { cleanups.forEach((f) => f()); cleanups = []; Voice.stop(); }
+function clearScreen() { cleanups.forEach((f) => f()); cleanups = []; Voice.stop(); window.scrollTo(0, 0); }
 function on(sel, ev, fn) { const el = app.querySelector(sel); if (el) el.addEventListener(ev, fn); }
 
 function confetti() {
   const box = document.createElement("div");
   box.className = "confetti";
   const colors = ["#f59e0b", "#22c55e", "#3b82f6", "#ef4444", "#a855f7", "#facc15"];
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < 80; i++) {
     const s = document.createElement("i");
     s.style.left = Math.random() * 100 + "%";
     s.style.background = pick(colors);
@@ -51,21 +57,32 @@ function confetti() {
   setTimeout(() => box.remove(), 4000);
 }
 
+const logoHTML = (small) => `
+  <div class="logo ${small ? "small" : ""}">
+    <span class="logo-top">גיבורי</span><span class="logo-main">העיר</span>
+  </div>`;
+
 // ---------- Screen 1: choose a hero ----------
 function showHome() {
   clearScreen();
   hero = null;
   app.innerHTML = `
     <section class="home">
-      <h1 class="title">גיבורי העיר</h1>
-      <p class="subtitle">מי יוצא היום להציל את העיר?</p>
+      ${logoHTML()}
+      <p class="tagline">מי יוצא היום להציל את העיר?</p>
       <div class="hero-pick">
-        ${Object.keys(HEROES).map((id) => `
-          <button class="hero-card" data-hero="${id}" style="--c:${HEROES[id].cape}">
-            ${heroSVG(id, 170, state.players[id].powers)}
+        ${Object.keys(HEROES).map((id, i) => `
+          <button class="hero-card ${i ? "tilt-l" : "tilt-r"}" data-hero="${id}" style="--c:${HEROES[id].suit};--d:${HEROES[id].dark}">
+            <span class="card-rays"></span>
+            ${heroSVG(id, 190, state.players[id].powers)}
             <span class="hero-name">${HEROES[id].name}</span>
+            <span class="hero-title">${HEROES[id].title}</span>
             <span class="hero-stars">⭐ ${state.players[id].stars}</span>
-          </button>`).join("")}
+          </button>`).join(`<div class="vs">${burstSVG("או")}</div>`)}
+      </div>
+      <div class="villain-corner">
+        <div class="villain-bubble">חה חה! אני אבלגן את כל העיר!</div>
+        ${villainSVG(5, 0, 130)}
       </div>
       <div id="voice-warning"></div>
       <button class="parents-link" data-parents>👨‍👩‍👦 פינת ההורים</button>
@@ -85,9 +102,10 @@ function showHome() {
 // ---------- Screen 2: the city map ----------
 function topBar() {
   return `
-    <header class="topbar" style="--c:${H().cape}">
-      <button class="icon-btn" data-home title="החלפת גיבור">↩️</button>
-      <div class="me">${heroSVG(hero, 46, me().powers)}<b>${H().name}</b></div>
+    <header class="topbar" style="--c:${H().suit}">
+      <button class="icon-btn" data-home title="החלפת גיבור">↩</button>
+      <div class="me">${heroFaceSVG(hero, 52)}<b>${H().name}</b></div>
+      ${logoHTML(true)}
       <div class="stars">⭐ ${me().stars}</div>
       <button class="base-btn" data-base>🏰 הבסיס שלי</button>
     </header>`;
@@ -98,21 +116,31 @@ function showMap(greet) {
   app.innerHTML = `
     ${topBar()}
     <section class="map">
-      <h2 class="map-title">לאן יוצאים למשימה?</h2>
-      <div class="zones">
-        ${ZONES.map((z) => `
-          <button class="zone" data-zone="${z.id}" style="--z:${z.color}">
-            <span class="zone-icon">${z.icon}</span>
-            <span class="zone-title">${z.title}</span>
-            <span class="zone-skill">${z.skill}</span>
-            <span class="zone-level">שלב ${levelOf(z.id)} · ${me().zones[z.id]} משימות</span>
-          </button>`).join("")}
-      </div>
-      <div class="city-skyline" aria-hidden="true">🏢🏠🏬🌳🏫🏠🏥🌳🏢</div>
+      <div class="map-caption">${burstSVG("!")}<span>לחץ על מקום במפה, והגיבור ירוץ לשם</span></div>
+      <div class="map-frame">${mapSVG(me())}</div>
     </section>`;
   bindTop();
-  app.querySelectorAll("[data-zone]").forEach((b) => b.addEventListener("click", () => { Sfx.click(); startMission(b.dataset.zone); }));
-  if (greet) Voice.say(`שָׁלוֹם ${H().name}! לְאָן יוֹצְאִים לַמְּשִׂימָה?`);
+  const svg = app.querySelector(".map-svg");
+  placeToken(svg, me().at);
+  let busy = false;
+  svg.querySelectorAll(".spot").forEach((s) => {
+    const go = () => {
+      if (busy) return;
+      busy = true;
+      Sfx.click();
+      const to = s.dataset.zone;
+      const zone = ZONES.find((z) => z.id === to);
+      Voice.say(plain(zone.title));
+      walkToken(svg, me().at, to, () => {
+        me().at = to;
+        save();
+        startMission(to);
+      });
+    };
+    s.addEventListener("click", go);
+    s.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  });
+  if (greet) Voice.say(`שָׁלוֹם ${H().name}! דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?`);
 }
 
 function bindTop() {
@@ -123,16 +151,27 @@ function bindTop() {
 // ---------- Screen 3: a mission ----------
 let mission = null;
 
+function bossHTML(zone, hp) {
+  if (zone.boss === "robot") return robotSVG(hp, 5);
+  if (zone.boss === "villain") return villainSVG(hp, 5);
+  return "";
+}
+
 function startMission(zoneId) {
   clearScreen();
   const zone = ZONES.find((z) => z.id === zoneId);
   mission = { zone, plan: planMission(zoneId), i: 0, mistakes: 0, hp: 5 };
+  const foe = zone.boss === "robot" ? robotSVG(5, 0) : villainSVG(5, 0);
   app.innerHTML = `
     ${topBar()}
-    <section class="intro" style="--z:${zone.color}">
-      <div class="intro-icon">${zone.icon}</div>
-      <h2>${zone.title}</h2>
-      <p class="story">${zone.storyText}</p>
+    <section class="intro comic-panel" style="--z:${zone.color}">
+      <div class="intro-head"><span class="intro-icon">${zone.icon}</span><h2>${zone.title}</h2><span class="level-chip">שלב ${levelOf(zone.id)}</span></div>
+      <div class="versus">
+        <div class="vs-side">${heroSVG(hero, 170, me().powers)}</div>
+        <div class="vs-mid">${burstSVG("נגד")}</div>
+        <div class="vs-side foe">${foe}</div>
+      </div>
+      <p class="story caption-box">${zone.storyText}</p>
       <button class="go-btn" data-go>🦸 יאללה, למשימה!</button>
       <button class="soft-btn" data-back>חזרה למפה</button>
     </section>`;
@@ -145,17 +184,16 @@ function startMission(zoneId) {
 function showChallenge() {
   clearScreen();
   const { zone } = mission;
-  const isRobot = zone.id === "numbers";
   app.innerHTML = `
     <section class="mission" style="--z:${zone.color}">
       <div class="mission-top">
         <button class="icon-btn" data-quit title="יציאה מהמשימה">✖</button>
-        <div class="progress">${mission.plan.map((_, i) => `<span class="${i < mission.i ? "done" : i === mission.i ? "now" : ""}"></span>`).join("")}</div>
-        <div class="mini-hero">${heroSVG(hero, 52, me().powers)}</div>
+        <div class="zone-tag">${zone.icon} ${zone.title}</div>
+        <div class="progress">${mission.plan.map((_, i) => `<span class="${i < mission.i ? "done" : i === mission.i ? "now" : ""}">${i < mission.i ? "★" : ""}</span>`).join("")}</div>
       </div>
       <div class="mission-body">
-        ${isRobot ? `<div class="robot-side" id="robot">${robotSVG(mission.hp, 5)}</div>` : ""}
-        <div class="challenge" id="challenge"></div>
+        ${zone.boss ? `<div class="boss-side" id="boss">${bossHTML(zone, mission.hp)}</div>` : ""}
+        <div class="challenge comic-panel" id="challenge"></div>
       </div>
       <div class="feedback" id="feedback"></div>
     </section>`;
@@ -169,7 +207,7 @@ function runChallenge() {
   const fn = mission.plan[mission.i];
   let finished = false;
   const api = {
-    heroColor: H().cape,
+    heroColor: H().suit,
     say: (t) => Voice.say(t),
     cleanup: (f) => cleanups.push(f),
     replace: () => runChallenge(),
@@ -183,9 +221,10 @@ function runChallenge() {
       finished = true;
       Sfx.good();
       const last = mission.i === mission.plan.length - 1;
-      Voice.say(Math.random() < 0.3 ? `${pick(PRAISE)} ${H().name}` : pick(PRAISE));
-      flash("✔️");
-      if (mission.zone.id === "numbers") hitRobot();
+      const word = pick(BURSTS);
+      Voice.say(Math.random() < 0.3 ? `${pick(PRAISE)} ${H().name}` : word);
+      flash(plain(word));
+      if (mission.zone.boss) hitBoss();
       setTimeout(() => {
         mission.i++;
         if (last) finishMission();
@@ -198,19 +237,19 @@ function runChallenge() {
   setTimeout(() => { if (!finished) Voice.say(speech); }, 350);
 }
 
-function flash(symbol) {
+function flash(word) {
   const f = document.getElementById("feedback");
   if (!f) return;
-  f.innerHTML = `<span>${symbol}</span>`;
+  f.innerHTML = `<div class="flash">${burstSVG(word)}</div>`;
   f.classList.remove("show"); void f.offsetWidth; f.classList.add("show");
 }
 
-function hitRobot() {
+function hitBoss() {
   mission.hp--;
-  const r = document.getElementById("robot");
+  const r = document.getElementById("boss");
   if (!r) return;
   Sfx.zap();
-  r.innerHTML = robotSVG(mission.hp, 5);
+  r.innerHTML = bossHTML(mission.zone, mission.hp);
   r.classList.remove("zap"); void r.offsetWidth; r.classList.add("zap");
 }
 
@@ -229,13 +268,15 @@ function finishMission() {
   save();
 
   const what = reward.kind === "part" ? "חלק חדש לבסיס הגיבורים" : reward.kind === "power" ? "כוח מיוחד חדש" : "מדליה";
-  const robotLine = mission.zone.id === "numbers" ? "הרובוט נרדם והגשר פתוח! " : "";
+  const bossLine = mission.zone.boss === "robot" ? "הרובוט נרדם! " : mission.zone.boss === "villain" ? "ד״ר בלגן נרדם! " : "";
+  const bossSpoken = mission.zone.boss === "robot" ? "הָרוֹבּוֹט נִרְדַּם! " : mission.zone.boss === "villain" ? "דּוֹקְטוֹר בַּלָּגָן נִרְדַּם! " : "";
   app.innerHTML = `
     ${topBar()}
-    <section class="reward">
-      <h2>${robotLine}הצלת את העיר, ${H().name}!</h2>
+    <section class="reward comic-panel">
+      <h2 class="comic-title">${bossLine}הצלת את העיר, ${H().name}!</h2>
       <div class="earned-stars">${"⭐".repeat(stars)}<span class="dim">${"⭐".repeat(3 - stars)}</span></div>
       <div class="gift">
+        <div class="gift-rays"></div>
         <div class="gift-box">🎁</div>
         <div class="gift-open hidden">
           <div class="reward-icon">${reward.icon}</div>
@@ -252,7 +293,7 @@ function finishMission() {
   bindTop();
   Sfx.win();
   confetti();
-  Voice.say(`${mission.zone.id === "numbers" ? "הָרוֹבּוֹט נִרְדַּם! " : ""}הִצַּלְתָּ אֶת הָעִיר, ${H().name}! הִנֵּה הַפְּרָס שֶׁלְּךָ`);
+  Voice.say(`${bossSpoken}הִצַּלְתָּ אֶת הָעִיר, ${H().name}! הִנֵּה הַפְּרָס שֶׁלְּךָ`);
   setTimeout(() => {
     app.querySelector(".gift-box")?.classList.add("hidden");
     app.querySelector(".gift-open")?.classList.remove("hidden");
@@ -271,8 +312,8 @@ function showBase() {
   const next = rewardFor(p.done);
   app.innerHTML = `
     ${topBar()}
-    <section class="base">
-      <h2>הבסיס של ${H().name}</h2>
+    <section class="base comic-panel">
+      <h2 class="comic-title">הבסיס של ${H().name}</h2>
       <div class="base-row">
         <div class="base-pic">${baseSVG(p.parts, hero)}</div>
         <div class="base-hero">${heroSVG(hero, 180, p.powers)}</div>
@@ -297,28 +338,33 @@ function showParents() {
   clearScreen();
   const voiceName = Voice.voice ? Voice.voice.name : "לא נמצא קול בעברית";
   app.innerHTML = `
-    <section class="parents">
-      <h2>👨‍👩‍👦 פינת ההורים</h2>
+    <section class="parents comic-panel">
+      <h2 class="comic-title">👨‍👩‍👦 פינת ההורים</h2>
       <div class="panel">
         <h3>מה מתרגלים בכל מקום בעיר</h3>
         <ul>
           <li>📚 <b>ספריית האותיות</b>: למצוא אות לפי שם, באיזו אות מתחילה מילה (לפי הצליל), איזו אות חסרה.</li>
           <li>🪧 <b>פארק השלטים</b>: לקרוא מילה (עם ניקוד) ולבחור תמונה, ולבחור מילה לתמונה.</li>
           <li>✏️ <b>סדנת הכתיבה</b>: להרכיב מילה מאותיות, להקליד מילה במקלדת, לעקוב בעכבר אחרי צורת אות.</li>
+          <li>🦁 <b>גן החיות</b>: איזו חיה מתחילה באות, באיזו אות נגמרת מילה, צליל פותח.</li>
           <li>🤖 <b>גשר הרובוטים</b>: לספור, להשלים רצף מספרים, חיבור וחיסור עד 10.</li>
+          <li>🍉 <b>שוק הפירות</b>: איפה יש יותר / פחות, כמה חסר כדי להגיע למספר, לשלם במטבעות.</li>
+          <li>🚂 <b>תחנת הרכבת</b>: כמה מחיאות כפיים (הברות) במילה, כמה אותיות במילה, מה מתחיל באותו צליל.</li>
+          <li>🚀 <b>נמל החלליות</b>: ספירה לאחור, לזהות מספר ששומעים, מה גדול / קטן יותר.</li>
+          <li>🏰 <b>המבצר של ד״ר בלגן</b>: קרב סיום שמערבב הכול.</li>
         </ul>
         <p>כל משימה היא 5 אתגרים קצרים. אחרי כל 3 משימות באותו מקום, השלב עולה (עד שלב 3). טעות לא מורידה כלום, רק משפיעה על מספר הכוכבים. אחרי 2 טעויות, התשובה הנכונה מהבהבת.</p>
       </div>
       <div class="panel">
-        <h3>ההתקדמות</h3>
-        <table>
-          <tr><th></th>${ZONES.map((z) => `<th>${z.icon}</th>`).join("")}<th>⭐</th><th></th></tr>
+        <h3>ההתקדמות (מספר משימות בכל מקום)</h3>
+        <div class="table-wrap"><table>
+          <tr><th></th>${ZONES.map((z) => `<th title="${z.title}">${z.icon}</th>`).join("")}<th>⭐</th><th></th></tr>
           ${Object.keys(HEROES).map((id) => {
             const p = state.players[id];
-            return `<tr><td><b>${HEROES[id].name}</b></td>${ZONES.map((z) => `<td>${p.zones[z.id]}</td>`).join("")}<td>${p.stars}</td>
+            return `<tr><td><b>${HEROES[id].name}</b></td>${ZONES.map((z) => `<td>${p.zones[z.id] || 0}</td>`).join("")}<td>${p.stars}</td>
               <td><button class="soft-btn small" data-reset="${id}">איפוס</button></td></tr>`;
           }).join("")}
-        </table>
+        </table></div>
       </div>
       <div class="panel">
         <h3>הקול</h3>

@@ -1,4 +1,4 @@
-// Speaking in Hebrew (the browser's built-in voice) and little sound effects.
+﻿// Speaking in Hebrew (the browser's built-in voice) and little sound effects.
 
 const Voice = {
   voice: null,
@@ -57,6 +57,7 @@ const Sfx = {
   },
   good() { this.tone(660, 0, 0.15); this.tone(880, 0.1, 0.2); },
   oops() { this.tone(220, 0, 0.25, "triangle", 0.12); },
+  step() { this.tone(180 + Math.random() * 60, 0, 0.05, "triangle", 0.06); },
   click() { this.tone(520, 0, 0.06, "square", 0.05); },
   zap() { this.tone(900, 0, 0.1, "sawtooth", 0.06); this.tone(400, 0.08, 0.15, "sawtooth", 0.05); },
   win() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.13, 0.3, "triangle", 0.15)); },

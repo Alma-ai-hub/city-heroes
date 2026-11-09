@@ -44,7 +44,10 @@ function otherLetters(answer, n, lvl, extraAvoid = []) {
 }
 
 function promptHTML(text) {
-  return `<div class="prompt"><button class="speak-btn" data-speak title="לשמוע שוב">🔊</button><span>${text}</span></div>`;
+  return `<div class="prompt">
+    <div class="prompt-hero">${typeof hero !== "undefined" && hero ? heroFaceSVG(hero) : ""}</div>
+    <div class="bubble"><button class="speak-btn" data-speak title="לשמוע שוב">🔊</button><span>${text}</span></div>
+  </div>`;
 }
 
 function wireSpeak(el, api, speech) {
@@ -457,13 +460,259 @@ function arithmetic(el, lvl, api) {
   return speech;
 }
 
+// ---------- Zoo: sounds and letters with animals ----------
+const animals = (lvl) => WORDS.filter((w) => w.a && w.lvl <= Math.max(2, lvl));
+
+// Pictures whose first letters don't sound alike (so only one answer is right).
+function distinctStarts(answer, pool, n) {
+  const used = [...groupOf(SOUND_ALIKE, answer.w[0])];
+  const out = [];
+  for (const w of shuffle(pool)) {
+    if (out.length >= n) break;
+    if (w.w === answer.w || used.includes(w.w[0])) continue;
+    out.push(w);
+    used.push(...groupOf(SOUND_ALIKE, w.w[0]));
+  }
+  return out;
+}
+
+function startsWithPick(el, lvl, api) {
+  const word = fresh(animals(lvl), (w) => w.w);
+  const letter = word.w[0];
+  const opts = shuffle([word, ...distinctStarts(word, animals(3), lvl <= 1 ? 2 : 3)]);
+  const speech = `אֵיזוֹ חַיָּה מַתְחִילָה בָּאוֹת ${letterName(letter)}?`;
+  choiceQuestion(el, api, {
+    text: "איזו חיה מתחילה באות הזאת?",
+    speech,
+    visual: `<div class="letter-card">${letter}</div>`,
+    options: opts.map((w) => ({ value: w.w, html: `<span class="emoji-opt">${w.e}</span>` })),
+    answer: word.w,
+    optionClass: "pictures",
+  });
+  return speech;
+}
+
+const END_OK = "בגדזכלמנספצקרשתט";
+function endLetter(el, lvl, api) {
+  const list = WORDS.filter((w) => w.lvl <= Math.max(2, lvl) && END_OK.includes(w.w[w.w.length - 1]));
+  const word = fresh(list.filter((w) => w.a).length > 5 && Math.random() < 0.6 ? list.filter((w) => w.a) : list, (w) => w.w);
+  const last = word.w[word.w.length - 1];
+  const opts = shuffle([last, ...otherLetters(last, 2, lvl, [word.w[0]])]);
+  const speech = `בְּאֵיזוֹ אוֹת נִגְמֶרֶת הַמִּלָּה ${word.n}?`;
+  choiceQuestion(el, api, {
+    text: "באיזו אות נגמרת המילה?",
+    speech,
+    visual: `<button class="big-emoji tap" data-word>${word.e}</button>`,
+    options: opts.map((l) => ({ value: l, html: `<span class="letter">${l}</span>` })),
+    answer: last,
+    optionClass: "letters",
+  });
+  el.querySelector("[data-word]").addEventListener("click", () => api.say(word.n));
+  return speech;
+}
+
+// ---------- Market: more/less, how many more, paying ----------
+function compareMore(el, lvl, api) {
+  const max = lvl <= 1 ? 6 : lvl === 2 ? 8 : 10;
+  let a, b;
+  do { a = rand(1, max); b = rand(1, max); } while (a === b || Math.abs(a - b) < (lvl <= 1 ? 3 : 1));
+  const fruit = pick(FRUITS);
+  const askLess = lvl >= 2 && Math.random() < 0.4;
+  const answer = askLess ? (a < b ? "A" : "B") : (a > b ? "A" : "B");
+  const basket = (n) => `<span class="basket">${Array.from({ length: n }, () => `<i>${fruit}</i>`).join("")}</span>`;
+  const speech = askLess ? "בְּאֵיזֶה סַל יֵשׁ פָּחוֹת?" : "בְּאֵיזֶה סַל יֵשׁ יוֹתֵר?";
+  choiceQuestion(el, api, {
+    text: askLess ? "באיזה סל יש פחות?" : "באיזה סל יש יותר?",
+    speech,
+    visual: `<div class="big-emoji">🧺</div>`,
+    options: [{ value: "A", html: basket(a) }, { value: "B", html: basket(b) }],
+    answer,
+    optionClass: "baskets",
+  });
+  return speech;
+}
+
+function makeTotal(el, lvl, api) {
+  const total = lvl <= 1 ? rand(3, 5) : rand(4, 10);
+  const have = rand(1, total - 1);
+  const need = total - have;
+  const fruit = pick(FRUITS);
+  const showEmpty = lvl <= 2;
+  const speech = `יֵשׁ ${have}. כַּמָּה צָרִיךְ עוֹד, כְּדֵי שֶׁיִּהְיוּ ${total}?`;
+  choiceQuestion(el, api, {
+    text: `יש ${have}. כמה צריך עוד כדי שיהיו ${total}?`,
+    speech,
+    visual: `<div class="count-box" dir="ltr">${Array.from({ length: have }, () => `<span>${fruit}</span>`).join("")}${showEmpty ? Array.from({ length: need }, () => `<span class="empty-spot"></span>`).join("") : ""}</div>
+             <div class="goal-tag">צריך: ${total}</div>`,
+    options: numberOptions(need, 1, 10).map((x) => ({ value: x, html: `<span class="num">${x}</span>` })),
+    answer: need,
+    optionClass: "numbers",
+  });
+  return speech;
+}
+
+function payCoins(el, lvl, api) {
+  const price = rand(lvl <= 1 ? 1 : 3, lvl <= 1 ? 5 : lvl === 2 ? 8 : 10);
+  const fruit = pick(FRUITS);
+  const speech = `הַפְּרִי עוֹלֶה ${price} שְׁקָלִים. שִׂים בַּקֻּפָּה ${price} מַטְבְּעוֹת, וְלַחַץ לְשַׁלֵּם`;
+  el.innerHTML = `
+    ${promptHTML(`שים בקופה ${price} מטבעות`)}
+    <div class="shop">
+      <div class="price-tag"><span class="big-emoji">${fruit}</span><b>${price} ₪</b></div>
+      <div class="till" data-till><small>הקופה</small><div class="till-coins"></div></div>
+    </div>
+    <div class="wallet">${Array.from({ length: 10 }, () => `<button class="coin">₪1</button>`).join("")}</div>
+    <button class="go-btn" data-pay>💰 לשלם</button>`;
+  wireSpeak(el, api, speech);
+  const till = el.querySelector(".till-coins");
+  const wallet = el.querySelector(".wallet");
+  let done = false;
+  const move = (c) => {
+    if (done) return;
+    Sfx.click();
+    (c.parentElement === till ? wallet : till).appendChild(c);
+  };
+  el.querySelectorAll(".coin").forEach((c) => c.addEventListener("click", () => move(c)));
+  el.querySelector("[data-pay]").addEventListener("click", () => {
+    if (done) return;
+    const n = till.children.length;
+    if (n === price) { done = true; api.correct(); }
+    else {
+      api.mistake({ quiet: true });
+      api.say(n < price ? `יֵשׁ בַּקֻּפָּה ${n}. צָרִיךְ עוֹד` : `יֵשׁ בַּקֻּפָּה ${n}. זֶה יוֹתֵר מִדַּי`);
+    }
+  });
+  return speech;
+}
+
+// ---------- Space port: numbers ----------
+function countdown(el, lvl, api) {
+  const top = lvl <= 1 ? 10 : lvl === 2 ? 15 : 20;
+  const len = 4;
+  const start = rand(len, top);
+  const seq = Array.from({ length: len }, (_, i) => start - i);
+  const hide = lvl <= 1 ? len - 1 : rand(1, len - 1);
+  const answer = seq[hide];
+  const speech = "סְפִירָה לְאָחוֹר לַהַמְרָאָה! אֵיזֶה מִסְפָּר חָסֵר?";
+  choiceQuestion(el, api, {
+    text: "ספירה לאחור! איזה מספר חסר?",
+    speech,
+    visual: `<div class="seq" dir="ltr">${seq.map((x, i) => `<span class="${i === hide ? "blank" : ""}">${i === hide ? "?" : x}</span>`).join("<b>→</b>")}<em>🚀</em></div>`,
+    options: numberOptions(answer, 0, top, seq.filter((x) => x !== answer)).map((x) => ({ value: x, html: `<span class="num">${x}</span>` })),
+    answer,
+    optionClass: "numbers",
+  });
+  return speech;
+}
+
+function hearNumber(el, lvl, api) {
+  const top = lvl <= 1 ? 10 : lvl === 2 ? 15 : 20;
+  const answer = fresh(Array.from({ length: top }, (_, i) => i + 1));
+  const n = lvl <= 1 ? 3 : lvl === 2 ? 4 : 5;
+  const set = new Set([answer]);
+  while (set.size < n) set.add(rand(1, top));
+  const speech = `לְחַץ עַל הַמִּסְפָּר ${answer}`;
+  choiceQuestion(el, api, {
+    text: "לחץ על המספר ששמעת",
+    speech,
+    visual: `<button class="big-emoji tap" data-again>👂</button>`,
+    options: shuffle([...set]).map((x) => ({ value: x, html: `<span class="num">${x}</span>` })),
+    answer,
+    optionClass: "numbers",
+  });
+  el.querySelector("[data-again]").addEventListener("click", () => api.say(speech));
+  return speech;
+}
+
+function biggerNumber(el, lvl, api) {
+  const top = lvl <= 1 ? 10 : 20;
+  const n = lvl >= 3 ? 3 : 2;
+  const set = new Set();
+  while (set.size < n) set.add(rand(1, top));
+  const nums = [...set];
+  if (lvl <= 1 && Math.abs(nums[0] - nums[1]) < 2) return biggerNumber(el, lvl, api);
+  const askSmall = lvl >= 2 && Math.random() < 0.4;
+  const answer = askSmall ? Math.min(...nums) : Math.max(...nums);
+  const speech = askSmall ? "אֵיזֶה מִסְפָּר קָטָן יוֹתֵר?" : "אֵיזֶה מִסְפָּר גָּדוֹל יוֹתֵר?";
+  choiceQuestion(el, api, {
+    text: askSmall ? "איזה מספר קטן יותר?" : "איזה מספר גדול יותר?",
+    speech,
+    visual: `<div class="big-emoji">${askSmall ? "🐜" : "🐘"}</div>`,
+    options: nums.map((x) => ({ value: x, html: `<span class="num">${x}</span>` })),
+    answer,
+    optionClass: "numbers",
+  });
+  return speech;
+}
+
+// ---------- Train station: claps (syllables) and words ----------
+function syllableClaps(el, lvl, api) {
+  const word = fresh(WORDS.filter((w) => w.s > 0 && w.lvl <= Math.max(2, lvl)), (w) => w.w);
+  const speech = `כַּמָּה מְחִיאוֹת כַּפַּיִם יֵשׁ בַּמִּלָּה ${word.n}? ${word.n}`;
+  choiceQuestion(el, api, {
+    text: "כמה מחיאות כפיים יש במילה?",
+    speech,
+    visual: `<button class="big-emoji tap" data-word>${word.e}</button>`,
+    options: [1, 2, 3, 4].map((x) => ({ value: x, html: `<span class="claps"><b>${x}</b><small>${"👏".repeat(x)}</small></span>` })),
+    answer: word.s,
+    optionClass: "numbers",
+  });
+  el.querySelector("[data-word]").addEventListener("click", () => api.say(word.n));
+  return speech;
+}
+
+function wordLength(el, lvl, api) {
+  const word = fresh(WORDS.filter((w) => w.lvl <= lvl + 1 && w.w.length <= 6), (w) => w.w);
+  const answer = word.w.length;
+  const speech = "כַּמָּה אוֹתִיּוֹת יֵשׁ בַּמִּלָּה? סְפֹר אוֹתָן";
+  choiceQuestion(el, api, {
+    text: "כמה אותיות יש במילה?",
+    speech,
+    visual: `<div class="big-emoji small">${word.e}</div><div class="word-show spaced">${word.w}</div>`,
+    options: numberOptions(answer, 2, 7).map((x) => ({ value: x, html: `<span class="num">${x}</span>` })),
+    answer,
+    optionClass: "numbers",
+  });
+  return speech;
+}
+
+function sameStart(el, lvl, api) {
+  const pool = WORDS.filter((w) => w.lvl <= Math.max(2, lvl));
+  let target, match;
+  for (let tries = 0; tries < 30 && !match; tries++) {
+    target = fresh(pool, (w) => w.w);
+    match = shuffle(pool.filter((w) => w.w !== target.w && w.w[0] === target.w[0]))[0];
+  }
+  if (!match) return soundStart(el, lvl, api);
+  const others = distinctStarts(target, pool.filter((w) => w.w !== match.w), 2);
+  const opts = shuffle([match, ...others]);
+  const speech = `אֵיזוֹ תְּמוּנָה מַתְחִילָה כְּמוֹ ${target.n}?`;
+  choiceQuestion(el, api, {
+    text: "איזו תמונה מתחילה באותו צליל?",
+    speech,
+    visual: `<button class="big-emoji tap" data-word>${target.e}</button>`,
+    options: opts.map((w) => ({ value: w.w, html: `<span class="emoji-opt">${w.e}</span>` })),
+    answer: match.w,
+    optionClass: "pictures",
+  });
+  el.querySelector("[data-word]").addEventListener("click", () => api.say(target.n));
+  return speech;
+}
+
 // Which challenges each zone uses.
 const ZONE_CHALLENGES = {
   letters: [findLetter, soundStart, missingLetter],
   reading: [readPick, pictureWord],
   writing: [buildWord, traceLetter, typeWord],
+  zoo: [startsWithPick, endLetter, soundStart],
   numbers: [countThings, sequence, arithmetic],
+  market: [compareMore, makeTotal, payCoins],
+  train: [syllableClaps, wordLength, sameStart],
+  space: [countdown, hearNumber, biggerNumber],
 };
+// The villain's fortress mixes a bit of everything (without the slow ones).
+ZONE_CHALLENGES.fortress = [findLetter, soundStart, readPick, pictureWord, buildWord, startsWithPick,
+  countThings, arithmetic, makeTotal, syllableClaps, biggerNumber, sequence];
 
 // A mission = 5 challenges, mixing the zone's types.
 function planMission(zoneId) {

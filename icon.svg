@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="70%">
+      <stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#1e1b4b"/>
+    </radialGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <clipPath id="round"><rect x="8" y="8" width="240" height="240" rx="52"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="256" height="256" fill="url(#bg)"/>
+    <g fill="#ffffff" opacity=".12">
+      <path d="M128 118 L0 40 L0 80Z M128 118 L40 0 L80 0Z M128 118 L150 0 L190 0Z M128 118 L256 20 L256 60Z M128 118 L256 140 L256 180Z M128 118 L200 256 L160 256Z M128 118 L90 256 L50 256Z M128 118 L0 170 L0 210Z"/>
+    </g>
+    <!-- burst -->
+    <polygon fill="#facc15" stroke="#111" stroke-width="7" stroke-linejoin="round"
+      points="128,14 146,58 186,30 178,78 228,72 196,108 240,132 192,146 214,192 168,178 162,228 132,190 100,230 92,180 46,198 66,154 18,136 62,110 30,70 80,78 74,30 112,58"/>
+  </g>
+  <!-- shield -->
+  <path d="M128 52 L194 74 V124 Q194 178 128 210 Q62 178 62 124 V74Z" fill="url(#shield)" stroke="#111" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M128 66 L180 84 V124 Q180 168 128 194" fill="none" stroke="#ffffff55" stroke-width="7" stroke-linecap="round"/>
+  <!-- mask -->
+  <path d="M72 116 Q128 90 184 116 L180 146 Q154 136 128 148 Q102 136 76 146Z" fill="#ef4444" stroke="#111" stroke-width="8" stroke-linejoin="round"/>
+  <ellipse cx="104" cy="126" rx="14" ry="10" fill="#fff" stroke="#111" stroke-width="5"/>
+  <ellipse cx="152" cy="126" rx="14" ry="10" fill="#fff" stroke="#111" stroke-width="5"/>
+  <circle cx="106" cy="127" r="5" fill="#111"/><circle cx="154" cy="127" r="5" fill="#111"/>
+  <!-- smile -->
+  <path d="M110 168 Q128 180 146 168" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+  <!-- lightning -->
+  <path d="M196 150 L222 150 L208 176 L230 176 L190 226 L202 190 L184 190Z" fill="#facc15" stroke="#111" stroke-width="6" stroke-linejoin="round"/>
+</svg>
