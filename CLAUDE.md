@@ -31,4 +31,4 @@ Liora is a beginner with no programming experience: explain simply, in Hebrew.
   of the ink is outside.
 - Words with syllable count `s` (0 = skip; words ending in patach ganuv are skipped).
 - Math is shown left-to-right. Numbers use Rubik (Karantina digits are hard to read).
-- Git repo is local only (not published). Commit after each working step.
+- **Published 2026-11-09** (Liora approved a public repo, names Bar/Yarden kept): https://github.com/Alma-ai-hub/city-heroes, live at https://alma-ai-hub.github.io/city-heroes/ (GitHub Pages from `main`, root). Pushing to `main` updates the site in ~1 min. `gh` is at `C:\Program Files\GitHub CLI\gh.exe`. Commits use the GitHub noreply email (repo-local git config). Progress is per device/browser (localStorage). Commit and push after each working step.
