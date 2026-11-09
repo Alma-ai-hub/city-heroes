@@ -1,12 +1,19 @@
-﻿// The illustrated city map: a road through all the places, and the hero walking along it.
+// The illustrated city map: a long winding road through all the places (from the start at
+// the bottom up to Dr. Balagan's fortress at the top), and the hero walking along it.
 
-const MAP_W = 1600, MAP_H = 1000;
+const MAP_W = 1600;
+const ROW_Y = [2440, 2040, 1640, 1240, 840];   // the rows of places, bottom to top
+const COL_X = [1340, 980, 620, 260];          // right to left (Hebrew reading order)
+const FORTRESS_AT = [800, 400];
+const MAP_H = 2640;
 
-// Where each place sits on the map (same order as ZONES = the order of the road).
-const SPOTS = {
-  letters: [1360, 800], reading: [985, 845], writing: [610, 815], zoo: [235, 715],
-  numbers: [470, 520], market: [860, 455], train: [1300, 470], space: [1310, 195], fortress: [520, 175],
-};
+// Places go 4 per row, snaking: right→left, then left→right, and so on. The last is the fortress.
+const SPOTS = {};
+ZONES.forEach((z, i) => {
+  if (z.id === "fortress") { SPOTS[z.id] = FORTRESS_AT; return; }
+  const row = Math.floor(i / 4), col = i % 4;
+  SPOTS[z.id] = [row % 2 === 0 ? COL_X[col] : COL_X[3 - col], ROW_Y[row]];
+});
 
 // A smooth line through points (so the road passes exactly through every place).
 function smoothPath(pts) {
@@ -19,8 +26,18 @@ function smoothPath(pts) {
   }
   return d;
 }
-const ROAD_PTS = [[1660, 880], ...ZONES.map((z) => SPOTS[z.id])];
+// The road: through every place, with a turn at the end of each row.
+const ROAD_PTS = (() => {
+  const pts = [[1660, 2500]];
+  ZONES.forEach((z, i) => {
+    pts.push(SPOTS[z.id]);
+    const row = Math.floor(i / 4);
+    if (z.id !== "fortress" && i % 4 === 3) pts.push([row % 2 === 0 ? 105 : 1495, ROW_Y[row] - 200]);
+  });
+  return pts;
+})();
 const ROAD_D = smoothPath(ROAD_PTS);
+
 
 // ---------- scenery ----------
 const K = `stroke="${INK}" stroke-width="4" stroke-linejoin="round"`;
@@ -155,17 +172,155 @@ const PLACE_ART = {
     <text x="0" y="-24" text-anchor="middle" font-size="18" font-weight="900" fill="#3b0764" font-family="Arial">@</text>`,
 };
 
+// ---------- drawings of the newer places ----------
+Object.assign(PLACE_ART, {
+  numbers: () => `
+    <path d="M-150 30 Q0 50 150 30 L150 60 Q0 76 -150 60Z" fill="#38bdf8" ${K}/>
+    <path d="M-120 46 h30 M-30 52 h40 M70 48 h30" stroke="#e0f2fe" stroke-width="4" stroke-linecap="round"/>
+    <g ${K}>
+      <path d="M-130 16 Q0 -54 130 16 L130 40 Q0 -24 -130 40Z" fill="#a8a29e"/>
+      <path d="M-130 8 Q0 -62 130 8" fill="none" stroke-width="5"/>
+      ${[-96, -60, -24, 12, 48, 84].map((x, i) => `<path d="M${x} ${-10 - Math.sin(((i + 1) / 7) * Math.PI) * 30} v18" />`).join("")}
+      <rect x="-20" y="-104" width="40" height="34" rx="8" fill="#94a3b8"/>
+      <rect x="-26" y="-70" width="52" height="42" rx="8" fill="#a8b5c7"/>
+      <circle cx="-8" cy="-88" r="6" fill="#ef4444"/><circle cx="8" cy="-88" r="6" fill="#ef4444"/>
+      <path d="M0 -104 v-12" /><circle cx="0" cy="-118" r="5" fill="#f59e0b"/>
+    </g>`,
+  circus: () => `
+    <g ${K}>
+      <path d="M-100 44 L-92 -20 L92 -20 L100 44Z" fill="#fff"/>
+      ${[-70, -30, 10, 50].map((x) => `<path d="M${x} -20 L${x - 6} 44 L${x + 14} 44 L${x + 20} -20Z" fill="#ef4444" stroke="none"/>`).join("")}
+      <path d="M-100 44 L-92 -20 L92 -20 L100 44Z" fill="none"/>
+      <path d="M-104 -16 L0 -96 L104 -16Z" fill="#ef4444"/>
+      <path d="M-60 -48 L0 -96 L-20 -20 M60 -48 L0 -96 L20 -20" fill="none" stroke-width="3"/>
+      <path d="M-104 -16 Q-78 0 -52 -16 Q-26 0 0 -16 Q26 0 52 -16 Q78 0 104 -16" fill="#facc15"/>
+      <path d="M-20 44 V8 Q0 -8 20 8 V44Z" fill="#7c2d12"/>
+      <path d="M0 -96 V-124" stroke-width="4"/><path d="M0 -124 L26 -116 L0 -108Z" fill="#facc15"/>
+    </g>
+    <g class="floaty">${[[-118, -70, "#3b82f6"], [116, -84, "#22c55e"], [96, -40, "#a855f7"]].map(([x, y, c]) => `<path d="M${x} ${y + 26} q-4 14 4 26" stroke="${INK}" stroke-width="2" fill="none"/><ellipse cx="${x}" cy="${y}" rx="17" ry="21" fill="${c}" ${K}/>`).join("")}</g>`,
+  bakery: () => `
+    <g ${K}>
+      <rect x="-86" y="-20" width="172" height="64" fill="#fef3c7"/>
+      <path d="M-96 -20 L-86 -48 H86 L96 -20 Q84 -8 72 -20 Q60 -8 48 -20 Q36 -8 24 -20 Q12 -8 0 -20 Q-12 -8 -24 -20 Q-36 -8 -48 -20 Q-60 -8 -72 -20 Q-84 -8 -96 -20Z" fill="#f472b6"/>
+      <rect x="-70" y="0" width="50" height="34" fill="#bae6fd"/><rect x="20" y="0" width="34" height="44" fill="#92400e"/>
+      <rect x="-50" y="-96" width="100" height="34" rx="8" fill="#f9a8d4"/>
+      <rect x="-36" y="-122" width="72" height="28" rx="7" fill="#fde68a"/>
+      <rect x="-4" y="-142" width="8" height="20" fill="#60a5fa"/>
+    </g>
+    <path d="M0 -158 C6 -150 6 -142 0 -142 C-6 -142 -6 -150 0 -158Z" fill="#fb923c" stroke="${INK}" stroke-width="2.5" class="flame"/>
+    <text x="-62" y="26" font-size="22">🧁🍩</text>`,
+  treasure: () => `
+    <ellipse cx="0" cy="34" rx="150" ry="46" fill="#38bdf8" ${K}/>
+    <ellipse cx="0" cy="28" rx="118" ry="32" fill="#fde68a" ${K}/>
+    <g ${K}>
+      <path d="M-60 26 Q-66 -40 -48 -90" fill="none" stroke="#92400e" stroke-width="12"/>
+      <path d="M-60 26 Q-66 -40 -48 -90" fill="none" stroke-width="0"/>
+      <path d="M-48 -90 Q-90 -100 -110 -70 Q-80 -84 -48 -90Z M-48 -90 Q-20 -120 14 -104 Q-20 -100 -48 -90Z M-48 -90 Q-60 -130 -90 -130 Q-64 -112 -48 -90Z M-48 -90 Q-10 -84 2 -60 Q-26 -78 -48 -90Z" fill="#22c55e"/>
+      <rect x="10" y="-26" width="76" height="46" rx="6" fill="#b45309"/>
+      <path d="M10 -26 Q48 -60 86 -26Z" fill="#d97706"/>
+      <rect x="40" y="-30" width="16" height="22" fill="#facc15"/>
+    </g>
+    <text x="10" y="-30" font-size="22">✨</text>
+    <path d="M-20 14 l16 14 M-4 14 l-16 14" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/>`,
+  underwater: () => `
+    <ellipse cx="0" cy="10" rx="140" ry="80" fill="#0ea5e9" ${K}/>
+    <path d="M-120 -20 q20 -12 40 0 t40 0 t40 0 t40 0 t40 0" stroke="#e0f2fe" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g ${K}><path d="M-90 60 Q-96 20 -80 -4 M-80 60 Q-70 30 -60 16" fill="none" stroke="#f472b6" stroke-width="8"/>
+      <path d="M70 62 Q80 24 96 10 M84 62 Q100 40 112 34" fill="none" stroke="#fb923c" stroke-width="8"/>
+      <path d="M-30 50 a30 22 0 0 1 60 0Z" fill="#a5f3fc"/></g>
+    <text x="-56" y="10" font-size="36" class="floaty">🐠</text><text x="22" y="-14" font-size="30" class="floaty">🐟</text><text x="40" y="44" font-size="26">🐙</text>`,
+  music: () => `
+    <g ${K}>
+      <rect x="-90" y="-30" width="180" height="74" fill="#f5d0fe"/>
+      <path d="M-104 -30 Q0 -110 104 -30Z" fill="#c026d3"/>
+      ${[-60, -20, 20, 60].map((x) => `<rect x="${x - 7}" y="-24" width="14" height="66" fill="#fff"/>`).join("")}
+      <ellipse cx="0" cy="40" rx="34" ry="10" fill="#b91c1c"/><rect x="-34" y="12" width="68" height="28" fill="#ef4444" stroke="none"/>
+      <ellipse cx="0" cy="12" rx="34" ry="10" fill="#fef3c7"/><path d="M-34 12 V40 M34 12 V40"/>
+    </g>
+    <g class="floaty" font-size="30" fill="${INK}"><text x="-110" y="-70">♪</text><text x="76" y="-90">♫</text><text x="-20" y="-96">♩</text></g>`,
+  lab: () => `
+    <g ${K}>
+      <rect x="-80" y="-36" width="160" height="80" fill="#e0f2fe"/>
+      <rect x="-90" y="-50" width="180" height="18" fill="#0ea5e9"/>
+      <rect x="-60" y="-14" width="34" height="28" fill="#fef08a"/><rect x="26" y="-14" width="34" height="28" fill="#fef08a"/>
+      <rect x="-14" y="6" width="28" height="38" fill="#0369a1"/>
+      <path d="M-14 -140 h28 v30 l30 54 q6 12 -8 12 h-72 q-14 0 -8 -12 l30 -54z" fill="#fff"/>
+      <path d="M-34 -80 h68 l12 22 q6 12 -8 12 h-76 q-14 0 -8 -12z" fill="#4ade80"/>
+    </g>
+    <g class="floaty" fill="#bbf7d0" stroke="${INK}" stroke-width="2.5"><circle cx="-6" cy="-150" r="7"/><circle cx="10" cy="-166" r="5"/></g>`,
+  forest: () => `
+    <ellipse cx="0" cy="40" rx="140" ry="34" fill="#14532d" ${K}/>
+    ${tree(-80, 30, 1.4, "#15803d")}${tree(80, 30, 1.3, "#166534")}${tree(0, 10, 1.7, "#22c55e")}
+    <g font-family="Arial" font-weight="900" font-size="26" fill="#fde047" stroke="${INK}" stroke-width="2.5"><text x="-8" y="0">ל</text><text x="-88" y="20">ו</text><text x="72" y="20">ד</text></g>
+    <g ${K}><path d="M100 40 q14 -24 28 0z" fill="#ef4444"/><rect x="110" y="40" width="8" height="12" fill="#fff"/></g>`,
+  fire: () => `
+    <g ${K}>
+      <rect x="-96" y="-40" width="150" height="84" fill="#ef4444"/>
+      <path d="M-104 -40 h166 l-10 -22 h-146z" fill="#7f1d1d"/>
+      <rect x="-82" y="-14" width="60" height="58" fill="#fee2e2"/>
+      ${[0, 1, 2, 3].map((i) => `<path d="M-82 ${-2 + i * 14} h60" stroke-width="2.5"/>`).join("")}
+      <rect x="-6" y="-24" width="44" height="28" fill="#fef08a"/>
+      <rect x="54" y="-100" width="30" height="144" fill="#b91c1c"/>
+      <rect x="48" y="-110" width="42" height="14" fill="#7f1d1d"/>
+      <circle cx="69" cy="-74" r="10" fill="#facc15"/>
+      <rect x="90" y="4" width="70" height="40" rx="6" fill="#dc2626"/><rect x="96" y="-16" width="30" height="24" rx="4" fill="#bae6fd"/>
+      <circle cx="104" cy="46" r="10" fill="#334155"/><circle cx="146" cy="46" r="10" fill="#334155"/>
+      <path d="M130 -2 l30 -20" stroke-width="5"/>
+    </g>`,
+  stadium: () => `
+    <g ${K}>
+      <ellipse cx="0" cy="10" rx="130" ry="56" fill="#cbd5e1"/>
+      <ellipse cx="0" cy="12" rx="96" ry="36" fill="#22c55e"/>
+      <path d="M0 -24 V48" stroke="#fff" stroke-width="3"/><circle cx="0" cy="12" r="12" fill="none" stroke="#fff" stroke-width="3"/>
+      <rect x="-122" y="-90" width="8" height="70" fill="#64748b"/><rect x="114" y="-90" width="8" height="70" fill="#64748b"/>
+      <rect x="-134" y="-104" width="32" height="18" fill="#fef08a"/><rect x="102" y="-104" width="32" height="18" fill="#fef08a"/>
+    </g>
+    <path d="M-118 -86 L-60 -20 L-140 -20Z M118 -86 L60 -20 L140 -20Z" fill="#fef08a55"/>
+    <text x="-14" y="22" font-size="24">⚽</text>`,
+  dragon: () => `
+    <g ${K}>
+      <path d="M-140 50 L-90 -60 L-40 -30 L0 -110 L60 -40 L100 -70 L150 50Z" fill="#78716c"/>
+      <path d="M-90 -60 L-70 -40 M0 -110 L14 -80 M100 -70 L110 -50" stroke="#fff" stroke-width="5"/>
+      <path d="M-40 50 V0 Q0 -50 40 0 V50Z" fill="#1c1917"/>
+    </g>
+    <g transform="translate(0 6) scale(.42)">${dragonSVG(5, 0).replace(/<svg[^>]*>/, "<g transform='translate(-100 -110)'>").replace("</svg>", "</g>")}</g>`,
+  studio: () => `
+    <g ${K}>
+      <path d="M-50 50 L-20 -80 M50 50 L20 -80 M0 50 L0 -20" stroke="#92400e" stroke-width="7"/>
+      <rect x="-70" y="-110" width="140" height="100" fill="#fff"/>
+      <path d="M-60 -30 Q-20 -100 20 -60 T60 -90" fill="none" stroke="#3b82f6" stroke-width="8"/>
+      <circle cx="-30" cy="-80" r="16" fill="#facc15"/>
+      <path d="M-20 -26 L10 -60 L40 -26Z" fill="#22c55e"/>
+      <path d="M70 20 q50 -30 60 10 q4 26 -24 22 q-10 -2 -10 10 q-6 16 -26 -6z" fill="#fde68a"/>
+    </g>
+    <g stroke="${INK}" stroke-width="2.5"><circle cx="92" cy="18" r="6" fill="#ef4444"/><circle cx="110" cy="14" r="6" fill="#3b82f6"/><circle cx="118" cy="30" r="6" fill="#22c55e"/></g>`,
+  ice: () => `
+    <ellipse cx="0" cy="40" rx="150" ry="40" fill="#f0f9ff" ${K}/>
+    <g ${K}>
+      <rect x="-70" y="-40" width="140" height="80" fill="#bae6fd"/>
+      <rect x="-100" y="-90" width="40" height="130" fill="#7dd3fc"/><rect x="60" y="-90" width="40" height="130" fill="#7dd3fc"/>
+      <path d="M-106 -90 L-80 -136 L-54 -90Z M54 -90 L80 -136 L106 -90Z M-30 -40 L0 -90 L30 -40Z" fill="#e0f2fe"/>
+      <path d="M-20 40 V6 Q0 -16 20 6 V40Z" fill="#0369a1"/>
+      <path d="M-60 -30 l14 20 M40 -30 l14 20" stroke="#fff" stroke-width="4"/>
+    </g>
+    <g class="floaty" font-size="22"><text x="-130" y="-60">❄️</text><text x="110" y="-120">❄️</text></g>`,
+});
+
 function mapSVG(player) {
   const done = player.zones;
-  const scenery = `
-    ${cloud(230, 70, 0.9)}${cloud(820, 60, 1.1)}${cloud(1470, 80, 0.8)}
-    ${tower(985, 380, 60, 170, "#475569")}${tower(1045, 380, 50, 220, "#334155")}${tower(1100, 380, 56, 140, "#64748b")}${tower(1150, 380, 40, 190, "#1e293b")}
-    ${house(1500, 650, "#fecaca", "#b91c1c")}${house(1190, 660, "#fef3c7", "#c2410c")}${house(790, 670, "#e0f2fe", "#1d4ed8")}
-    ${house(380, 860, "#ede9fe", "#7c3aed")}${house(1500, 960, "#dcfce7", "#15803d")}${house(80, 930, "#fef9c3", "#ca8a04")}
-    ${house(660, 330, "#ffe4e6", "#be123c")}${house(1480, 400, "#e0e7ff", "#4338ca")}
-    ${tree(1180, 860)}${tree(1230, 900, 0.8)}${tree(800, 950, 0.9)}${tree(450, 960)}${tree(60, 790, 1.1)}${tree(110, 610, 0.9)}
-    ${tree(1560, 520, 0.9)}${tree(1110, 580, 0.8)}${tree(700, 610, 0.8)}${tree(1530, 260, 0.9)}${tree(1450, 590, 0.7)}
-    ${tree(190, 330, 0.9, "#4c1d95")}${tree(90, 230, 0.8, "#4c1d95")}${tree(800, 250, 0.8, "#4c1d95")}`;
+  // Little houses and trees between the rows of places.
+  const decor = [];
+  const between = [2600, 2240, 1440, 1040, 640];
+  const houseColors = [["#fecaca", "#b91c1c"], ["#fef3c7", "#c2410c"], ["#e0f2fe", "#1d4ed8"], ["#ede9fe", "#7c3aed"], ["#dcfce7", "#15803d"], ["#ffe4e6", "#be123c"]];
+  between.forEach((y, r) => {
+    for (let k = 0; k < 7; k++) {
+      const x = 220 + k * 190 + ((k * 53 + r * 31) % 50) - 25;
+      const yy = y + ((k * 29 + r * 17) % 40) - 20;
+      if ((k + r) % 3 === 0) { const [w, rf] = houseColors[(k + r) % houseColors.length]; decor.push(house(x, yy, w, rf)); }
+      else decor.push(tree(x, yy, 0.8 + ((k + r) % 3) * 0.15, r >= 4 ? "#4c1d95" : (k % 2 ? "#16a34a" : "#22c55e")));
+    }
+  });
+  const skyline = `${tower(740, 1080, 56, 170, "#475569")}${tower(800, 1080, 50, 220, "#334155")}${tower(856, 1080, 56, 140, "#64748b")}`;
 
   const places = ZONES.map((z, i) => {
     const [x, y] = SPOTS[z.id];
@@ -174,41 +329,49 @@ function mapSVG(player) {
       <g class="spot" data-zone="${z.id}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${z.title}">
         <ellipse cx="0" cy="56" rx="110" ry="18" fill="#0003"/>
         <g class="spot-art">${PLACE_ART[z.id]()}</g>
-        <g transform="translate(0 92)">
-          <rect x="-104" y="-22" width="208" height="44" rx="12" fill="${INK}" transform="translate(5 5)"/>
-          <rect x="-104" y="-22" width="208" height="44" rx="12" fill="#fff" stroke="${INK}" stroke-width="4"/>
-          <rect x="-104" y="-22" width="16" height="44" rx="6" fill="${z.color}" stroke="${INK}" stroke-width="4"/>
+        <g transform="translate(0 96)">
+          <rect x="-112" y="-22" width="224" height="44" rx="12" fill="${INK}" transform="translate(5 5)"/>
+          <rect x="-112" y="-22" width="224" height="44" rx="12" fill="#fff" stroke="${INK}" stroke-width="4"/>
+          <rect x="-112" y="-22" width="16" height="44" rx="6" fill="${z.color}" stroke="${INK}" stroke-width="4"/>
           <text x="8" y="10" text-anchor="middle" class="spot-label">${z.title}</text>
         </g>
-        <g transform="translate(96 -96)">
+        <g transform="translate(100 -100)">
           <circle r="24" fill="${n ? "#facc15" : "#fff"}" stroke="${INK}" stroke-width="4"/>
-          <text y="9" text-anchor="middle" class="spot-count">${n ? n : i + 1}</text>
+          <text y="9" text-anchor="middle" class="spot-count">${i + 1}</text>
         </g>
-        ${n ? `<text x="96" y="-60" text-anchor="middle" font-size="16">⭐</text>` : ""}
+        ${n ? `<g transform="translate(100 -62)"><rect x="-26" y="-13" width="52" height="24" rx="12" fill="${INK}"/><text y="5" text-anchor="middle" class="spot-done">⭐${n}</text></g>` : ""}
       </g>`;
   }).join("");
 
+  const river = "M-20 1850 C200 1810 420 1880 700 1850 S1200 1800 1620 1860";
   return `
   <svg viewBox="0 0 ${MAP_W} ${MAP_H}" class="map-svg" role="img" aria-label="מפת העיר">
     <defs>
       <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
-      <radialGradient id="evil" cx="520" cy="150" r="480" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#2e1065" stop-opacity=".95"/><stop offset=".6" stop-color="#581c87" stop-opacity=".55"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>
-      <radialGradient id="spaceGlow" cx="1310" cy="160" r="300" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#1e1b4b" stop-opacity=".85"/><stop offset="1" stop-color="#1e1b4b" stop-opacity="0"/></radialGradient>
+      <radialGradient id="evil" cx="800" cy="330" r="700" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#2e1065" stop-opacity=".95"/><stop offset=".55" stop-color="#581c87" stop-opacity=".6"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>
+      <radialGradient id="night" cx="620" cy="800" r="260" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#1e1b4b" stop-opacity=".9"/><stop offset="1" stop-color="#1e1b4b" stop-opacity="0"/></radialGradient>
     </defs>
     <rect width="${MAP_W}" height="${MAP_H}" fill="#86efac"/>
-    <g fill="#4ade80"><ellipse cx="300" cy="880" rx="260" ry="90"/><ellipse cx="1250" cy="640" rx="300" ry="80"/><ellipse cx="900" cy="300" rx="260" ry="90"/><ellipse cx="1500" cy="120" rx="200" ry="80"/></g>
+    <g fill="#4ade80"><ellipse cx="300" cy="2560" rx="280" ry="90"/><ellipse cx="1250" cy="2230" rx="300" ry="80"/><ellipse cx="900" cy="1450" rx="300" ry="90"/><ellipse cx="400" cy="1050" rx="260" ry="80"/></g>
     <rect width="${MAP_W}" height="${MAP_H}" fill="url(#evil)"/>
-    <rect width="${MAP_W}" height="${MAP_H}" fill="url(#spaceGlow)"/>
-    <g fill="#fef9c3">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 1600}" cy="${(i * 53) % 260}" r="${i % 3 ? 1.6 : 2.6}" opacity="${i % 2 ? 0.8 : 0.5}"/>`).join("")}</g>
-    <path d="M-20 545 C200 520 360 520 470 520 S760 655 1000 660 S1400 615 1620 650" fill="none" stroke="${INK}" stroke-width="76" stroke-linecap="round"/>
-    <path d="M-20 545 C200 520 360 520 470 520 S760 655 1000 660 S1400 615 1620 650" fill="none" stroke="#38bdf8" stroke-width="66" stroke-linecap="round"/>
-    <path d="M-20 545 C200 520 360 520 470 520 S760 655 1000 660 S1400 615 1620 650" fill="none" stroke="#bae6fd" stroke-width="6" stroke-dasharray="30 60" class="water"/>
-    ${scenery}
+    <rect width="${MAP_W}" height="${MAP_H}" fill="url(#night)"/>
+    <g fill="#fef9c3">${Array.from({ length: 60 }, (_, i) => `<circle cx="${(i * 137) % 1600}" cy="${(i * 53) % 700}" r="${i % 3 ? 1.8 : 3}" opacity="${i % 2 ? 0.8 : 0.5}" class="${i % 5 ? "" : "twinkle"}"/>`).join("")}</g>
+    <ellipse cx="1360" cy="1650" rx="250" ry="160" fill="#0ea5e9" stroke="${INK}" stroke-width="5"/>
+    <ellipse cx="260" cy="1250" rx="230" ry="150" fill="#166534" opacity=".55"/>
+    <ellipse cx="260" cy="860" rx="230" ry="140" fill="#f0f9ff" stroke="${INK}" stroke-width="4"/>
+    <ellipse cx="1340" cy="860" rx="230" ry="130" fill="#a8a29e" opacity=".6"/>
+    <path d="${river}" fill="none" stroke="${INK}" stroke-width="76" stroke-linecap="round"/>
+    <path d="${river}" fill="none" stroke="#38bdf8" stroke-width="66" stroke-linecap="round"/>
+    <path d="${river}" fill="none" stroke="#bae6fd" stroke-width="6" stroke-dasharray="30 60" class="water"/>
+    ${decor.join("")}${skyline}
+    ${cloud(260, 120, 0.9)}${cloud(1380, 150, 1)}${cloud(900, 1180, 0.8)}${cloud(300, 2000, 0.8)}${cloud(1250, 2400, 0.9)}
     <path d="${ROAD_D}" fill="none" stroke="${INK}" stroke-width="60" stroke-linecap="round"/>
     <path d="${ROAD_D}" fill="none" stroke="#fcd9a8" stroke-width="50" stroke-linecap="round"/>
     <path d="${ROAD_D}" id="road" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="22 20"/>
+    <g ${K}><rect x="1442" y="1790" width="16" height="120" rx="4" fill="#92400e"/><rect x="1542" y="1790" width="16" height="120" rx="4" fill="#92400e"/></g>
+    <g transform="translate(1560 2560)"><rect x="-60" y="-26" width="120" height="44" rx="10" fill="#22c55e" ${K}/><text y="6" text-anchor="middle" class="spot-label" fill="#fff">התחלה</text></g>
     <rect width="${MAP_W}" height="${MAP_H}" fill="url(#dots)" pointer-events="none"/>
     ${places}
     <g id="token" pointer-events="none">
@@ -223,20 +386,29 @@ function mapSVG(player) {
 }
 
 // Points along the road where each place is (found once, after the map is drawn).
+let spotLenCache = null;
 function spotLengths(path) {
+  if (spotLenCache) return spotLenCache;
   const total = path.getTotalLength();
   const out = {};
   for (const z of ZONES) {
     const [x, y] = SPOTS[z.id];
     let best = 0, bestD = Infinity;
-    for (let L = 0; L <= total; L += 4) {
+    for (let L = 0; L <= total; L += 6) {
       const p = path.getPointAtLength(L);
       const d = (p.x - x) ** 2 + (p.y - y) ** 2;
       if (d < bestD) { bestD = d; best = L; }
     }
     out[z.id] = best;
   }
-  return out;
+  return (spotLenCache = out);
+}
+
+// Keep the hero on screen while the page scrolls.
+function followToken(token, smooth) {
+  const r = token.getBoundingClientRect();
+  const off = r.top + r.height / 2 - window.innerHeight / 2;
+  if (Math.abs(off) > 30) window.scrollBy({ top: smooth ? off * 0.12 : off, behavior: "instant" });
 }
 
 // Move the hero token along the road from one place to another, then call done().
@@ -247,7 +419,7 @@ function walkToken(svg, fromZone, toZone, done) {
   const a = lens[fromZone] ?? lens.letters, b = lens[toZone];
   const place = (L) => { const p = path.getPointAtLength(L); token.setAttribute("transform", `translate(${p.x} ${p.y - 30})`); };
   if (Math.abs(a - b) < 5) { place(b); done(); return; }
-  const dur = Math.min(2600, Math.max(700, Math.abs(b - a) * 1.1));
+  const dur = Math.min(3200, Math.max(700, Math.abs(b - a) * 0.6));
   const t0 = performance.now();
   let lastStep = 0;
   token.classList.add("walking");
@@ -255,6 +427,7 @@ function walkToken(svg, fromZone, toZone, done) {
     const t = Math.min(1, (now - t0) / dur);
     const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
     place(a + (b - a) * e);
+    followToken(token, true);
     if (now - lastStep > 180) { Sfx.step(); lastStep = now; }
     if (t < 1) requestAnimationFrame(step);
     else { token.classList.remove("walking"); setTimeout(done, 250); }
@@ -266,5 +439,7 @@ function placeToken(svg, zoneId) {
   const path = svg.querySelector("#road");
   const L = spotLengths(path)[zoneId] ?? 0;
   const p = path.getPointAtLength(L);
-  svg.querySelector("#token").setAttribute("transform", `translate(${p.x} ${p.y - 30})`);
+  const token = svg.querySelector("#token");
+  token.setAttribute("transform", `translate(${p.x} ${p.y - 30})`);
+  requestAnimationFrame(() => followToken(token, false));
 }

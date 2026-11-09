@@ -21,11 +21,8 @@ Liora is a beginner with no programming experience: explain simply, in Hebrew.
   style (thick black outlines, hard shadows, halftone dots, "בּוּם!" bursts, Karantina
   display font + Rubik). No Marvel characters, names or logos. Villain: **ד״ר בלגן**
   (Dr. Balagan, original), who messes up each place.
-- 9 places (`ZONES` in `js/data.js`, `ZONE_CHALLENGES` in `js/challenges.js`):
-  letters, reading, writing, zoo (letter sounds with animals), numbers (robot bridge),
-  market (more/less, how many more, paying coins), train (syllable claps, word length,
-  same first sound), space (countdown, hear a number, bigger/smaller), fortress (boss mix).
-  Places with `boss` show a robot/villain that falls asleep as you answer.
+- **21 worlds** (2026-11-09, Liora asked for at least 20, each with real content and design): `ZONES` in `js/data.js` (story, storyText, teaches = shown in the parents corner), tasks in `ZONE_CHALLENGES` (`js/challenges.js` for the first 9 worlds, `js/challenges2.js` for the 12 newer ones: circus balloons, bakery candles/ten-frame, treasure number grid/number line, under-the-sea same-word/color words, music drum syllables, lab patterns/odd one out/sorting, forest connect-the-dots letters, fire station house numbers/ladder, stadium scores, dragon memory game, color studio color-by-number/letter, ice palace before/after, dominoes, number bonds). 52 task types. Bosses: robot, dragon, villain.
+- Map (`js/map.js`): tall scrolling map (1600×2640), 4 places per row snaking up from "התחלה" at the bottom to the fortress at the top; positions come from the order of `ZONES`. Place drawings in `PLACE_ART`. The hero token walks the road and the page scrolls with it.
 - Level per place = 1 + missions done there / 3 (max 3).
 - Mistakes are never punished; after 2 wrong tries the answer glows. Stars: ≤1 mistake 3★.
 - Rewards cycle: 2 base parts, then a superpower (drawn on the hero), then medals.

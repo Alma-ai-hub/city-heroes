@@ -274,3 +274,34 @@ function burstSVG(word, color = "#facc15") {
     <text x="110" y="128" text-anchor="middle" class="burst-text">${word}</text>
   </svg>`;
 }
+
+// The dragon Dr. Balagan put a spell on (a friendly one, it just falls asleep).
+function dragonSVG(hp = 5, max = 5) {
+  const asleep = hp <= 0;
+  return `
+  <svg viewBox="0 0 200 210" class="boss-svg dragon ${asleep ? "asleep" : ""}" aria-label="דרקון">
+    ${max ? hpBar(hp, max) : ""}
+    <g stroke="${INK}" stroke-width="4" stroke-linejoin="round">
+      <path d="M60 110 L10 70 L30 112 L4 116 L52 140Z" fill="#a7f3d0"/>
+      <path d="M140 110 L190 70 L170 112 L196 116 L148 140Z" fill="#a7f3d0"/>
+      <path d="M140 170 Q190 176 186 140 Q180 160 150 152Z" fill="#22c55e"/>
+      <ellipse cx="100" cy="150" rx="48" ry="46" fill="#22c55e"/>
+      <ellipse cx="100" cy="160" rx="28" ry="30" fill="#fde68a"/>
+      <path d="M80 140 h40 M78 156 h44 M82 172 h36" stroke-width="2.5" opacity=".5"/>
+      <ellipse cx="78" cy="196" rx="16" ry="9" fill="#16a34a"/><ellipse cx="122" cy="196" rx="16" ry="9" fill="#16a34a"/>
+      <path d="M72 46 L64 18 L86 40Z M128 46 L136 18 L114 40Z" fill="#fef3c7"/>
+      <ellipse cx="100" cy="72" rx="46" ry="38" fill="#22c55e"/>
+      <ellipse cx="100" cy="92" rx="30" ry="18" fill="#4ade80"/>
+      <path d="M100 34 l8 -10 l4 12 l10 -6 l-2 12" fill="#f97316" stroke-width="3"/>
+    </g>
+    <circle cx="90" cy="92" r="3.5" fill="${INK}"/><circle cx="110" cy="92" r="3.5" fill="${INK}"/>
+    ${asleep
+      ? `<path d="M68 66 q10 8 20 0 M112 66 q10 8 20 0" stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+         <text x="140" y="44" font-size="26" font-weight="900" fill="#22c55e" stroke="${INK}" stroke-width="1.5">Z z</text>`
+      : `<ellipse cx="78" cy="64" rx="12" ry="13" fill="#fff" stroke="${INK}" stroke-width="3.5"/><ellipse cx="122" cy="64" rx="12" ry="13" fill="#fff" stroke="${INK}" stroke-width="3.5"/>
+         <circle cx="80" cy="66" r="6" fill="#7c3aed"/><circle cx="120" cy="66" r="6" fill="#7c3aed"/>
+         <path d="M64 50 l24 6 M136 50 l-24 6" stroke="${INK}" stroke-width="4.5" stroke-linecap="round"/>
+         <g class="smoke"><circle cx="148" cy="96" r="7" fill="#e5e7eb" stroke="${INK}" stroke-width="2.5"/><circle cx="162" cy="86" r="9" fill="#e5e7eb" stroke="${INK}" stroke-width="2.5"/></g>`}
+    <path d="M86 104 Q100 ${asleep ? 108 : 112} 114 104" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}

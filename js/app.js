@@ -116,7 +116,7 @@ function showMap(greet) {
   app.innerHTML = `
     ${topBar()}
     <section class="map">
-      <div class="map-caption">${burstSVG("!")}<span>לחץ על מקום במפה, והגיבור ירוץ לשם</span></div>
+      <div class="map-caption">${burstSVG("!")}<span>לחץ על מקום במפה, והגיבור ירוץ לשם. יש במפה ${ZONES.length} עולמות: גלול למעלה כדי לגלות את כולם!</span></div>
       <div class="map-frame">${mapSVG(me())}</div>
     </section>`;
   bindTop();
@@ -154,6 +154,7 @@ let mission = null;
 function bossHTML(zone, hp) {
   if (zone.boss === "robot") return robotSVG(hp, 5);
   if (zone.boss === "villain") return villainSVG(hp, 5);
+  if (zone.boss === "dragon") return dragonSVG(hp, 5);
   return "";
 }
 
@@ -161,7 +162,7 @@ function startMission(zoneId) {
   clearScreen();
   const zone = ZONES.find((z) => z.id === zoneId);
   mission = { zone, plan: planMission(zoneId), i: 0, mistakes: 0, hp: 5 };
-  const foe = zone.boss === "robot" ? robotSVG(5, 0) : villainSVG(5, 0);
+  const foe = zone.boss === "robot" ? robotSVG(5, 0) : zone.boss === "dragon" ? dragonSVG(5, 0) : villainSVG(5, 0);
   app.innerHTML = `
     ${topBar()}
     <section class="intro comic-panel" style="--z:${zone.color}">
@@ -268,8 +269,8 @@ function finishMission() {
   save();
 
   const what = reward.kind === "part" ? "חלק חדש לבסיס הגיבורים" : reward.kind === "power" ? "כוח מיוחד חדש" : "מדליה";
-  const bossLine = mission.zone.boss === "robot" ? "הרובוט נרדם! " : mission.zone.boss === "villain" ? "ד״ר בלגן נרדם! " : "";
-  const bossSpoken = mission.zone.boss === "robot" ? "הָרוֹבּוֹט נִרְדַּם! " : mission.zone.boss === "villain" ? "דּוֹקְטוֹר בַּלָּגָן נִרְדַּם! " : "";
+  const bossLine = { robot: "הרובוט נרדם! ", villain: "ד״ר בלגן נרדם! ", dragon: "הדרקון נרדם! " }[mission.zone.boss] || "";
+  const bossSpoken = { robot: "הָרוֹבּוֹט נִרְדַּם! ", villain: "דּוֹקְטוֹר בַּלָּגָן נִרְדַּם! ", dragon: "הַדְּרָקוֹן נִרְדַּם! " }[mission.zone.boss] || "";
   app.innerHTML = `
     ${topBar()}
     <section class="reward comic-panel">
@@ -342,17 +343,7 @@ function showParents() {
       <h2 class="comic-title">👨‍👩‍👦 פינת ההורים</h2>
       <div class="panel">
         <h3>מה מתרגלים בכל מקום בעיר</h3>
-        <ul>
-          <li>📚 <b>ספריית האותיות</b>: למצוא אות לפי שם, באיזו אות מתחילה מילה (לפי הצליל), איזו אות חסרה.</li>
-          <li>🪧 <b>פארק השלטים</b>: לקרוא מילה (עם ניקוד) ולבחור תמונה, ולבחור מילה לתמונה.</li>
-          <li>✏️ <b>סדנת הכתיבה</b>: להרכיב מילה מאותיות, להקליד מילה במקלדת, לעקוב בעכבר אחרי צורת אות.</li>
-          <li>🦁 <b>גן החיות</b>: איזו חיה מתחילה באות, באיזו אות נגמרת מילה, צליל פותח.</li>
-          <li>🤖 <b>גשר הרובוטים</b>: לספור, להשלים רצף מספרים, חיבור וחיסור עד 10.</li>
-          <li>🍉 <b>שוק הפירות</b>: איפה יש יותר / פחות, כמה חסר כדי להגיע למספר, לשלם במטבעות.</li>
-          <li>🚂 <b>תחנת הרכבת</b>: כמה מחיאות כפיים (הברות) במילה, כמה אותיות במילה, מה מתחיל באותו צליל.</li>
-          <li>🚀 <b>נמל החלליות</b>: ספירה לאחור, לזהות מספר ששומעים, מה גדול / קטן יותר.</li>
-          <li>🏰 <b>המבצר של ד״ר בלגן</b>: קרב סיום שמערבב הכול.</li>
-        </ul>
+        <ul>${ZONES.map((z) => `<li>${z.icon} <b>${z.title}</b>: ${z.teaches}</li>`).join("")}</ul>
         <p>כל משימה היא 5 אתגרים קצרים. אחרי כל 3 משימות באותו מקום, השלב עולה (עד שלב 3). טעות לא מורידה כלום, רק משפיעה על מספר הכוכבים. אחרי 2 טעויות, התשובה הנכונה מהבהבת.</p>
       </div>
       <div class="panel">
