@@ -173,9 +173,16 @@ const POWERS = [
 ];
 
 // The hero kids. Colors are easy to change here.
+// power: "fire" or "bolt" decides the hero's look (flames or lightning).
 const HEROES = {
-  bar: { name: "בר", suit: "#2563eb", dark: "#1e3a8a", cape: "#dc2626", accent: "#facc15", emblem: "ב", title: "בר הבזק" },
-  yarden: { name: "ירדן", suit: "#16a34a", dark: "#14532d", cape: "#ea580c", accent: "#facc15", emblem: "י", title: "ירדן הסופה" },
+  bar: {
+    name: "בר", title: "בר איש האש", spokenTitle: "בַּר אִישׁ הָאֵשׁ", power: "fire", emblem: "ב",
+    suit: "#dc2626", light: "#f87171", dark: "#7f1d1d", cape: "#111827", lining: "#f97316", accent: "#facc15",
+  },
+  yarden: {
+    name: "ירדן", title: "ירדן איש הברק", spokenTitle: "יַרְדֵּן אִישׁ הַבָּרָק", power: "bolt", emblem: "י",
+    suit: "#2563eb", light: "#60a5fa", dark: "#1e3a8a", cape: "#0f172a", lining: "#facc15", accent: "#fde047",
+  },
 };
 
 const PRAISE = ["יוֹפִי!", "מְעֻלֶּה!", "כׇּל הַכָּבוֹד!", "אַלּוּף!", "מְצֻיָּן!", "וָאוּ!", "גִּבּוֹר!"];

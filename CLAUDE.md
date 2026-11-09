@@ -12,7 +12,8 @@ Liora is a beginner with no programming experience: explain simply, in Hebrew.
   instructions. Speech text uses niqqud; on-screen text doesn't. This PC has
   "Microsoft Asaf" (Windows Hebrew voice); Edge also has natural online voices (preferred).
 - Kids are boys: speech uses masculine singular ("מצא", "בחר").
-- Flow: choose hero (Bar "בר הבזק" / Yarden "ירדן הסופה", separate progress in
+- Heroes (2026-11-09, Liora's names): **בר איש האש** (red suit, flame emblem, fireball, flames behind him) and **ירדן איש הברק** (blue suit, lightning emblem and bolts). Set by `power` in `HEROES` (`js/data.js`); drawn in `js/art.js` with gradients.
+- Flow: choose hero (separate progress in
   localStorage `city-heroes-v1`) → illustrated city map (`js/map.js`): the hero token walks
   along the road to the place clicked → mission intro (hero vs villain) → 5 challenges →
   reward → hero base.

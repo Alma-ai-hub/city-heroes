@@ -72,7 +72,7 @@ function showHome() {
       <p class="tagline">מי יוצא היום להציל את העיר?</p>
       <div class="hero-pick">
         ${Object.keys(HEROES).map((id, i) => `
-          <button class="hero-card ${i ? "tilt-l" : "tilt-r"}" data-hero="${id}" style="--c:${HEROES[id].suit};--d:${HEROES[id].dark}">
+          <button class="hero-card card-${HEROES[id].power} ${i ? "tilt-l" : "tilt-r"}" data-hero="${id}" style="--c:${HEROES[id].suit};--d:${HEROES[id].dark};--l:${HEROES[id].light}">
             <span class="card-rays"></span>
             ${heroSVG(id, 190, state.players[id].powers)}
             <span class="hero-name">${HEROES[id].name}</span>
@@ -140,7 +140,7 @@ function showMap(greet) {
     s.addEventListener("click", go);
     s.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
   });
-  if (greet) Voice.say(`שָׁלוֹם ${H().name}! דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?`);
+  if (greet) Voice.say(`שָׁלוֹם ${H().spokenTitle}! דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?`);
 }
 
 function bindTop() {

@@ -103,6 +103,21 @@ button { font-family: inherit; cursor: pointer; border: none; color: inherit; }
 }
 .hero-card > *:not(.card-rays) { position: relative; }
 .hero-card .hero-svg { filter: drop-shadow(4px 6px 0 #0006); }
+.hero-card { background: radial-gradient(circle at 50% 38%, var(--l) 0%, var(--c) 42%, var(--d) 100%); width: 300px; }
+.card-fire::after, .card-bolt::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.card-fire::after { background: radial-gradient(circle at 20% 90%, #fde04755 0 6px, transparent 7px), radial-gradient(circle at 80% 70%, #fb923c66 0 5px, transparent 6px), radial-gradient(circle at 30% 20%, #fde04744 0 4px, transparent 5px); animation: embers 3s linear infinite; }
+.card-bolt::after { background: linear-gradient(115deg, transparent 45%, #e0f2fe55 48%, transparent 52%); animation: flashCard 2.6s ease-in-out infinite; }
+.hero-card .hero-title { font-size: 22px; padding: 4px 14px; border: 3px solid var(--ink); }
+.card-fire .hero-title { background: linear-gradient(#fde047, #f97316); color: var(--ink); }
+.card-bolt .hero-title { background: linear-gradient(#e0f2fe, #38bdf8); color: var(--ink); }
+.aura-fire { animation: fireflick .45s ease-in-out infinite alternate; transform-origin: 100px 236px; }
+.aura-bolt { animation: boltflash 1.6s steps(1) infinite; }
+.hand-power { animation: pulse 1s ease-in-out infinite; transform-origin: 158px 26px; transform-box: view-box; }
+@keyframes fireflick { from { transform: scale(1, .96) skewX(-1.5deg); } to { transform: scale(1.02, 1.03) skewX(1.5deg); } }
+@keyframes boltflash { 0%, 100% { opacity: 1; } 40% { opacity: .55; } 45% { opacity: 1; } 70% { opacity: .75; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes embers { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 0 -300px, 0 -260px, 0 -320px; } }
+@keyframes flashCard { 0%, 70%, 100% { opacity: 0; transform: translateX(-60%); } 80% { opacity: 1; } 90% { opacity: 0; transform: translateX(60%); } }
 .hero-name {
   font-family: var(--display); font-size: 72px; line-height: .9; color: #fff;
   -webkit-text-stroke: 3px var(--ink); text-shadow: 4px 4px 0 var(--ink);
