@@ -52,7 +52,7 @@ function collectPhrases() {
   get("COLOR_WORDS").forEach((c) => add(c.n));
   get("ZONES").forEach((z) => { add(z.story); add(z.title.replace(NIQQUD, "")); });
   get("NEIGHBORHOODS").forEach((h) => add(h.spoken));
-  Object.values(get("HEROES")).forEach((h) => { add(h.spokenTitle); add(h.spokenName); });
+  Object.values(get("HEROES")).forEach((h) => { add(h.spokenTitle); add(h.spokenName); add(h.spokenAnd); });
   get("BASE_PARTS").forEach((p) => add(p.name));
   get("POWERS").forEach((p) => add(p.name));
   ["PRAISE", "BURSTS", "TRY_AGAIN"].forEach((k) => get(k).forEach(add));

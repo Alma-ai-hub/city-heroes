@@ -341,7 +341,7 @@ function categorySort(el, lvl, api) {
 function writeMyName(el, lvl, api) {
   const h = HEROES[hero];
   const letters = [...h.name];
-  const speech = ["כְּתֹב אֶת הַשֵּׁם שֶׁלְּךָ בַּמִּקְלֶדֶת", h.name === "בר" ? "בַּר" : "יַרְדֵּן"];
+  const speech = ["כְּתֹב אֶת הַשֵּׁם שֶׁלְּךָ בַּמִּקְלֶדֶת", h.spokenName];
   return typeIntoSlots(el, api, {
     text: `כתוב את השם שלך: ${h.name}`,
     speech,

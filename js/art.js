@@ -17,6 +17,7 @@ let artId = 0;
 const POWER_FX = {
   fire: { glow: ["#fde047", "#f97316", "#dc2626"], core: ["#ffffff", "#fde047", "#f97316", "#dc2626"] },
   bolt: { glow: ["#e0f2fe", "#38bdf8", "#1d4ed8"], core: ["#ffffff", "#e0f2fe", "#38bdf8", "#1d4ed8"] },
+  smash: { glow: ["#fef9c3", "#a3e635", "#15803d"], core: ["#ffffff", "#fef08a", "#a3e635", "#15803d"] },
 };
 
 function heroDefs(h, u) {
@@ -33,7 +34,10 @@ function heroDefs(h, u) {
 
 // The emblem in the middle of the chest: a flame or a lightning bolt.
 function emblemIcon(h, cx, cy, s = 1) {
-  const icon = h.power === "fire"
+  const star = Array.from({ length: 16 }, (_, i) => { const r = i % 2 ? 6 : 14, a = (Math.PI * i) / 8; return `${(r * Math.cos(a)).toFixed(1)},${(r * Math.sin(a)).toFixed(1)}`; }).join(" ");
+  const icon = h.power === "smash"
+    ? `<polygon points="${star}" fill="${h.suit}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/><circle r="3.5" fill="#fde047"/>`
+    : h.power === "fire"
     ? `<path d="M0 -14 C8 -6 12 0 8 8 C6 12 2 14 0 14 C-4 14 -9 11 -9 5 C-9 0 -5 -3 -4 -8 C-2 -4 -1 -2 1 -1 C3 -5 2 -10 0 -14Z" fill="${h.suit}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
        <path d="M0 2 C3 5 3 9 0 10 C-3 9 -3 6 0 2Z" fill="#fde047"/>`
     : `<path d="M3 -15 L-8 2 L-1 2 L-4 15 L9 -3 L2 -3 L6 -15Z" fill="${h.suit}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`;
@@ -47,7 +51,7 @@ function heroHead(h, u, cx = 100, cy = 64, night = false) {
     <g stroke="${INK}" stroke-width="4" stroke-linejoin="round">
       <circle cx="${x(-30)}" cy="${y(6)}" r="7" fill="url(#${u}k)"/><circle cx="${x(30)}" cy="${y(6)}" r="7" fill="url(#${u}k)"/>
       <ellipse cx="${cx}" cy="${cy}" rx="29" ry="31" fill="url(#${u}k)"/>
-      <path d="M${x(-31)} ${y(0)} Q${x(-34)} ${y(-30)} ${x(-16)} ${y(-38)} L${x(-14)} ${y(-50)} L${x(-2)} ${y(-40)} L${x(6)} ${y(-54)} L${x(14)} ${y(-38)} L${x(26)} ${y(-46)} L${x(26)} ${y(-30)} Q${x(36)} ${y(-20)} ${x(31)} ${y(0)} Q${x(22)} ${y(-18)} ${x(4)} ${y(-18)} L${x(-2)} ${y(-26)} L${x(-8)} ${y(-17)} Q${x(-22)} ${y(-16)} ${x(-31)} ${y(0)}Z" fill="#3b2416"/>
+      <path d="M${x(-31)} ${y(0)} Q${x(-34)} ${y(-30)} ${x(-16)} ${y(-38)} L${x(-14)} ${y(-50)} L${x(-2)} ${y(-40)} L${x(6)} ${y(-54)} L${x(14)} ${y(-38)} L${x(26)} ${y(-46)} L${x(26)} ${y(-30)} Q${x(36)} ${y(-20)} ${x(31)} ${y(0)} Q${x(22)} ${y(-18)} ${x(4)} ${y(-18)} L${x(-2)} ${y(-26)} L${x(-8)} ${y(-17)} Q${x(-22)} ${y(-16)} ${x(-31)} ${y(0)}Z" fill="${h.hair || "#3b2416"}"/>
     </g>
     <path d="M${x(-20)} ${y(-26)} Q${x(-14)} ${y(-36)} ${x(-4)} ${y(-36)}" stroke="#8a5a3b" stroke-width="3" fill="none" stroke-linecap="round"/>
     <path d="M${x(-34)} ${y(-6)} Q${x(-18)} ${y(-14)} ${x(0)} ${y(-6)} Q${x(18)} ${y(-14)} ${x(34)} ${y(-6)} L${x(38)} ${y(-12)} L${x(34)} ${y(8)} Q${x(18)} ${y(16)} ${x(0)} ${y(8)} Q${x(-18)} ${y(16)} ${x(-34)} ${y(8)} L${x(-38)} ${y(-12)}Z"
@@ -65,6 +69,17 @@ function heroHead(h, u, cx = 100, cy = 64, night = false) {
 
 // The power around the hero: flames behind Bar, lightning around Yarden.
 function heroAura(h, u) {
+  if (h.power === "smash") {
+    const burst = Array.from({ length: 24 }, (_, i) => { const r = i % 2 ? 70 : 104, a = (Math.PI * i) / 12; return `${(100 + r * Math.cos(a)).toFixed(0)},${(120 + r * Math.sin(a) * 1.05).toFixed(0)}`; }).join(" ");
+    return `<g class="aura aura-smash">
+      <ellipse cx="100" cy="125" rx="96" ry="104" fill="url(#${u}g)" opacity=".6"/>
+      <polygon points="${burst}" fill="#d9f99d" stroke="${INK}" stroke-width="3" stroke-linejoin="round" opacity=".85"/>
+      <ellipse cx="100" cy="226" rx="88" ry="14" fill="none" stroke="#a3e635" stroke-width="5" class="shock"/>
+      <ellipse cx="100" cy="226" rx="60" ry="9" fill="none" stroke="#fde047" stroke-width="4" class="shock s2"/>
+      <path d="M40 228 l14 -10 l6 8 l12 -12 M160 228 l-12 -10 l-8 8 l-12 -10" stroke="${INK}" stroke-width="3" fill="none" stroke-linejoin="round"/>
+      <g fill="#a8a29e" stroke="${INK}" stroke-width="2.5" class="rocks"><path d="M22 196 l10 -8 l10 6 l-4 10z"/><path d="M168 186 l12 -6 l6 10 l-12 4z"/><path d="M36 150 l8 -6 l6 6 l-6 6z"/></g>
+    </g>`;
+  }
   if (h.power === "fire") {
     return `<g class="aura aura-fire">
       <ellipse cx="100" cy="130" rx="92" ry="100" fill="url(#${u}g)" opacity=".55"/>
@@ -86,6 +101,14 @@ function heroAura(h, u) {
 
 // What the raised hand holds: a fireball or a lightning bolt.
 function handPower(h, u) {
+  if (h.power === "smash") {
+    const pts = Array.from({ length: 20 }, (_, i) => { const r = i % 2 ? 16 : 34, a = (Math.PI * i) / 10; return `${(156 + r * Math.cos(a)).toFixed(0)},${(40 + r * Math.sin(a)).toFixed(0)}`; }).join(" ");
+    return `<g class="hand-power">
+      <circle cx="156" cy="40" r="34" fill="url(#${u}g)"/>
+      <polygon points="${pts}" fill="#fde047" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M128 12 l-12 -10 M186 14 l12 -10 M190 50 l14 4" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
+    </g>`;
+  }
   if (h.power === "fire") {
     return `<g class="hand-power">
       <circle cx="158" cy="26" r="30" fill="url(#${u}g)"/>
@@ -182,13 +205,15 @@ function baseSVG(parts, hero, powers = []) {
   const fire = h.power === "fire";
   const part = (id, inner) => `<g class="base-part ${has(id) ? "built" : "ghost-part"}">${inner}</g>`;
   const S = `stroke="${INK}" stroke-width="4" stroke-linejoin="round"`;
-  const sky = fire ? ["#4c1d95", "#db2777", "#fb923c", "#fde68a"] : ["#0b1033", "#1e3a8a", "#3b82f6", "#a5f3fc"];
+  const day = h.power === "smash";
+  const sunny = fire || day;
+  const sky = day ? ["#0284c7", "#38bdf8", "#7dd3fc", "#ecfccb"] : fire ? ["#4c1d95", "#db2777", "#fb923c", "#fde68a"] : ["#0b1033", "#1e3a8a", "#3b82f6", "#a5f3fc"];
   return `
   <svg viewBox="0 0 900 560" class="base-svg" aria-label="בסיס הגיבורים">
     <defs>
       <linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1">${sky.map((c, i) => `<stop offset="${i / 3}" stop-color="${c}"/>`).join("")}</linearGradient>
       <linearGradient id="${u}hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
-      <linearGradient id="${u}mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${fire ? "#7c3aed" : "#1e40af"}"/><stop offset="1" stop-color="${fire ? "#be185d" : "#0f172a"}"/></linearGradient>
+      <linearGradient id="${u}mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${day ? "#65a30d" : fire ? "#7c3aed" : "#1e40af"}"/><stop offset="1" stop-color="${day ? "#14532d" : fire ? "#be185d" : "#0f172a"}"/></linearGradient>
       <linearGradient id="${u}wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${h.light}"/><stop offset=".55" stop-color="${h.suit}"/><stop offset="1" stop-color="${h.dark}"/></linearGradient>
       <linearGradient id="${u}dome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="${h.light}"/><stop offset="1" stop-color="${h.dark}"/></linearGradient>
       <linearGradient id="${u}stoneTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e8f0"/><stop offset="1" stop-color="#94a3b8"/></linearGradient>
@@ -197,16 +222,16 @@ function baseSVG(parts, hero, powers = []) {
       <linearGradient id="${u}gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a16207"/><stop offset=".5" stop-color="#fde047"/><stop offset="1" stop-color="#a16207"/></linearGradient>
       <linearGradient id="${u}metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#475569"/><stop offset=".45" stop-color="#e2e8f0"/><stop offset="1" stop-color="#475569"/></linearGradient>
       <radialGradient id="${u}glow"><stop offset="0" stop-color="#fef08a" stop-opacity=".95"/><stop offset="1" stop-color="#fef08a" stop-opacity="0"/></radialGradient>
-      <radialGradient id="${u}sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="${fire ? "#fde68a" : "#e0f2fe"}"/><stop offset="1" stop-color="${fire ? "#fde68a" : "#e0f2fe"}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${u}sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="${sunny ? "#fde68a" : "#e0f2fe"}"/><stop offset="1" stop-color="${sunny ? "#fde68a" : "#e0f2fe"}" stop-opacity="0"/></radialGradient>
       <radialGradient id="${u}flame" cx=".5" cy=".2" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fde047"/><stop offset=".7" stop-color="#f97316"/><stop offset="1" stop-color="#dc2626"/></radialGradient>
     </defs>
 
     <!-- sky, sun or moon, stars -->
     <rect width="900" height="560" fill="url(#${u}sky)"/>
-    <circle cx="${fire ? 640 : 700}" cy="${fire ? 200 : 90}" r="90" fill="url(#${u}sun)"/>
-    <circle cx="${fire ? 640 : 700}" cy="${fire ? 200 : 90}" r="36" fill="${fire ? "#fef3c7" : "#f8fafc"}" ${S}/>
-    ${fire ? "" : `<circle cx="714" cy="80" r="30" fill="#0b1033"/>`}
-    ${fire ? "" : `<g fill="#fff">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 900}" cy="${(i * 61) % 230}" r="${i % 4 ? 1.6 : 2.8}" class="${i % 5 ? "" : "twinkle"}"/>`).join("")}</g>`}
+    <circle cx="${sunny ? 640 : 700}" cy="${day ? 110 : fire ? 200 : 90}" r="90" fill="url(#${u}sun)"/>
+    <circle cx="${sunny ? 640 : 700}" cy="${day ? 110 : fire ? 200 : 90}" r="36" fill="${sunny ? "#fef3c7" : "#f8fafc"}" ${S}/>
+    ${sunny ? "" : `<circle cx="714" cy="80" r="30" fill="#0b1033"/>`}
+    ${sunny ? "" : `<g fill="#fff">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 900}" cy="${(i * 61) % 230}" r="${i % 4 ? 1.6 : 2.8}" class="${i % 5 ? "" : "twinkle"}"/>`).join("")}</g>`}
     <g fill="#ffffffcc" stroke="${INK}" stroke-width="3">
       <path d="M90 120 q-6 -26 22 -26 q8 -22 34 -12 q22 -16 40 6 q28 0 22 26 Z"/>
       <path d="M460 70 q-6 -20 18 -20 q6 -18 28 -10 q18 -12 32 4 q22 0 18 20 Z" opacity=".8"/>
@@ -215,7 +240,7 @@ function baseSVG(parts, hero, powers = []) {
     <!-- mountains and city far away -->
     <path d="M0 330 L120 210 L210 290 L330 170 L450 280 L560 190 L690 300 L800 200 L900 280 V420 H0Z" fill="url(#${u}mtn)" opacity=".85"/>
     <path d="M330 170 L300 200 L330 192 L360 205Z M800 200 L775 225 L800 218 L825 228Z" fill="#fff" opacity=".8"/>
-    <g fill="${fire ? "#3b0764" : "#020617"}" opacity=".8">
+    <g fill="${day ? "#334155" : fire ? "#3b0764" : "#020617"}" opacity=".8">
       ${[[40, 300, 40, 110], [86, 270, 34, 140], [126, 320, 46, 90], [760, 290, 40, 120], [806, 260, 36, 150], [846, 310, 50, 100]].map(([x, y, w, hh]) => `<rect x="${x}" y="${y}" width="${w}" height="${hh}"/>`).join("")}
     </g>
     <g fill="#fde68a" opacity=".9">${[[50, 320], [62, 340], [96, 290], [96, 320], [140, 340], [770, 310], [818, 280], [818, 320], [860, 330], [770, 340]].map(([x, y]) => `<rect x="${x}" y="${y}" width="8" height="10"/>`).join("")}</g>

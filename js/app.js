@@ -14,19 +14,23 @@ function load() {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
     if (s && s.players) {
       // Older saves don't know the newer places yet.
+      for (const id of Object.keys(HEROES)) if (!s.players[id]) s.players[id] = emptyPlayer();
       for (const p of Object.values(s.players)) { p.zones = { ...emptyZones(), ...p.zones }; p.at = p.at || "letters"; }
       return s;
     }
   } catch (e) { /* start fresh */ }
-  return { players: { bar: emptyPlayer(), yarden: emptyPlayer() } };
+  return { players: Object.fromEntries(Object.keys(HEROES).map((id) => [id, emptyPlayer()])) };
 }
 let state = load();
 state.settings = state.settings || {};
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }
 
-let hero = null; // "bar" | "yarden" (in a two-player game: whose turn it is)
-let team = false; // true = Bar and Yarden play together
-const TEAM = ["bar", "yarden"];
+let hero = null; // "bar" | "yarden" | "guy" (in a game together: whose turn it is)
+let team = false; // true = several heroes play together, taking turns
+let TEAM = ["bar", "yarden"]; // who plays together (chosen on the "who's playing" screen)
+// "בר וירדן" / "בר, ירדן וגיא", written and spoken.
+const teamNames = () => TEAM.length < 2 ? HEROES[TEAM[0]].name : TEAM.slice(0, -1).map((id) => HEROES[id].name).join(", ") + " ו" + HEROES[TEAM[TEAM.length - 1]].name;
+const teamSpoken = () => [...TEAM.slice(0, -1).map((id) => HEROES[id].spokenName), HEROES[TEAM[TEAM.length - 1]].spokenAnd];
 const me = () => state.players[hero];
 const H = () => HEROES[hero];
 const levelOf = (zoneId) => Math.min(3, 1 + Math.floor(me().zones[zoneId] / 3));
@@ -83,7 +87,7 @@ function showHome() {
             <span class="hero-stars">⭐ ${state.players[id].stars}</span>
           </button>`).join(`<div class="vs">${burstSVG("או")}</div>`)}
       </div>
-      <button class="team-btn" data-team>${heroFaceSVG("bar", 56)}${heroFaceSVG("yarden", 56)}<span>משחק זוגי: בר וירדן ביחד!</span></button>
+      <button class="team-btn" data-team>${Object.keys(HEROES).map((id) => heroFaceSVG(id, 52)).join("")}<span>משחקים ביחד!</span></button>
       <div class="villain-corner">
         <div class="villain-bubble">חה חה! אני אבלגן את כל העיר!</div>
         ${villainSVG(5, 0, 130)}
@@ -98,11 +102,59 @@ function showHome() {
     showMap(true);
   }));
   on("[data-parents]", "click", showParents);
-  on("[data-team]", "click", () => { team = true; hero = TEAM[0]; Sfx.click(); showMap(true); });
+  on("[data-team]", "click", () => { Sfx.click(); showTeamPick(); });
   setTimeout(() => {
     const w = document.getElementById("voice-warning");
     if (w && !Voice.hasHebrew()) w.innerHTML = `<p class="warn">🔇 לא נמצא קול בעברית בדפדפן הזה. כדי שהמשחק ידבר, פתחו אותו ב־<b>Microsoft Edge</b>.</p>`;
   }, 1500);
+}
+
+// ---------- Screen 1b: who plays together? ----------
+function showTeamPick() {
+  clearScreen();
+  const ids = Object.keys(HEROES);
+  const picked = new Set((state.settings.lastTeam || ids.slice(0, 2)).filter((id) => HEROES[id]));
+  app.innerHTML = `
+    <section class="home who-plays">
+      ${logoHTML()}
+      <p class="tagline">מי משחק ביחד? לחצו על 2 או 3 גיבורים</p>
+      <div class="hero-pick">
+        ${ids.map((id) => `
+          <button class="hero-card pickable card-${HEROES[id].power}" data-pick="${id}" style="--c:${HEROES[id].suit};--d:${HEROES[id].dark};--l:${HEROES[id].light}">
+            <span class="card-rays"></span>
+            ${heroSVG(id, 150, state.players[id].powers)}
+            <span class="hero-name">${HEROES[id].name}</span>
+            <span class="pick-mark">✔</span>
+          </button>`).join("")}
+      </div>
+      <div class="row-btns">
+        <button class="go-btn" data-start>🦸 יאללה, משחקים ביחד!</button>
+        <button class="soft-btn" data-back>חזרה</button>
+      </div>
+    </section>`;
+  const draw = () => {
+    app.querySelectorAll("[data-pick]").forEach((b) => b.classList.toggle("picked", picked.has(b.dataset.pick)));
+    app.querySelector("[data-start]").disabled = picked.size < 2;
+  };
+  app.querySelectorAll("[data-pick]").forEach((b) => b.addEventListener("click", () => {
+    const id = b.dataset.pick;
+    if (picked.has(id)) picked.delete(id); else picked.add(id);
+    Sfx.click();
+    if (picked.has(id)) Voice.say(HEROES[id].spokenTitle);
+    draw();
+  }));
+  on("[data-start]", "click", () => {
+    if (picked.size < 2) return;
+    TEAM = ids.filter((id) => picked.has(id));
+    state.settings.lastTeam = TEAM;
+    save();
+    team = true;
+    hero = TEAM[0];
+    showMap(true);
+  });
+  on("[data-back]", "click", showHome);
+  draw();
+  Voice.say(["מִי מְשַׂחֵק בְּיַחַד? לַחֲצוּ עַל שְׁנַיִם אוֹ שְׁלוֹשָׁה גִּבּוֹרִים"]);
 }
 
 // ---------- Screen 2: the city map, and each neighborhood ----------
@@ -110,7 +162,7 @@ function topBar() {
   return `
     <header class="topbar" style="--c:${H().suit}">
       <button class="icon-btn" data-home title="החלפת גיבור">↩</button>
-      ${team ? `<div class="me duo">${TEAM.map((id) => heroFaceSVG(id, 46)).join("")}<b>בר וירדן</b></div>` : `<div class="me">${heroFaceSVG(hero, 52)}<b>${H().name}</b></div>`}
+      ${team ? `<div class="me duo">${TEAM.map((id) => heroFaceSVG(id, 46)).join("")}<b>${teamNames()}</b></div>` : `<div class="me">${heroFaceSVG(hero, 52)}<b>${H().name}</b></div>`}
       ${logoHTML(true)}
       <div class="stars">${team ? TEAM.map((id) => `${HEROES[id].name} ⭐${state.players[id].stars}`).join(" · ") : `⭐ ${me().stars}`}</div>
       <button class="base-btn map-btn" data-map-top title="מפת העיר">🗺️</button>
@@ -168,7 +220,7 @@ function showMap(greet) {
     r.addEventListener("click", go);
     r.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
   });
-  if (greet) Voice.say([...(team ? ["שָׁלוֹם בַּר וְיַרְדֵּן! הַיּוֹם אַתֶּם מְשַׂחֲקִים בְּיַחַד."] : ["שָׁלוֹם", H().spokenTitle]), "דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?"]);
+  if (greet) Voice.say([...(team ? ["שָׁלוֹם", ...teamSpoken(), "הַיּוֹם אַתֶּם מְשַׂחֲקִים בְּיַחַד."] : ["שָׁלוֹם", H().spokenTitle]), "דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?"]);
 }
 
 function showHood(hoodId, greet) {
@@ -232,18 +284,18 @@ function bossHTML(zone, hp) {
 }
 
 // In a two-player game the kids take turns: one task each.
-const turnHero = (i) => (team ? TEAM[(i + mission.first) % 2] : mission.solo);
+const turnHero = (i) => (team ? TEAM[(i + mission.first) % TEAM.length] : mission.solo);
 
 function startMission(zoneId) {
   clearScreen();
   const zone = ZONES.find((z) => z.id === zoneId);
-  const first = team ? (state.settings.nextFirst || 0) : 0;
-  if (team) { state.settings.nextFirst = 1 - first; save(); }
+  const first = team ? (state.settings.nextFirst || 0) % TEAM.length : 0;
+  if (team) { state.settings.nextFirst = (first + 1) % TEAM.length; save(); }
   mission = { zone, plan: planMission(zoneId, team ? 6 : 5), i: 0, mistakes: {}, hp: 5, first, solo: hero };
   if (team) hero = turnHero(0);
   const foe = { robot: robotSVG(5, 0), dragon: dragonSVG(5, 0), monster: monsterSVG(5, 0) }[zone.boss] || villainSVG(5, 0);
   const heroesHTML = team
-    ? `<div class="vs-side duo">${TEAM.map((id) => heroSVG(id, 130, state.players[id].powers)).join("")}</div>`
+    ? `<div class="vs-side duo n${TEAM.length}">${TEAM.map((id) => heroSVG(id, TEAM.length > 2 ? 110 : 130, state.players[id].powers)).join("")}</div>`
     : `<div class="vs-side">${heroSVG(hero, 170, me().powers)}</div>`;
   app.innerHTML = `
     ${topBar()}
@@ -254,7 +306,7 @@ function startMission(zoneId) {
         <div class="vs-mid">${burstSVG("נגד")}</div>
         <div class="vs-side foe">${foe}</div>
       </div>
-      <p class="story caption-box">${zone.storyText}${team ? "<br><b>כל אחד בתורו: 3 אתגרים לבר ו־3 לירדן.</b>" : ""}</p>
+      <p class="story caption-box">${zone.storyText}${team ? `<br><b>כל אחד בתורו: ${6 / TEAM.length} אתגרים לכל גיבור.</b>` : ""}</p>
       <button class="go-btn" data-go>🦸 יאללה, למשימה!</button>
       <button class="soft-btn" data-back>חזרה למפה</button>
     </section>`;
@@ -309,7 +361,8 @@ function runChallenge() {
       const word = pick(BURSTS);
       Voice.say(team || Math.random() < 0.3 ? [pick(PRAISE), H().spokenName] : word);
       flash(plain(word));
-      if (mission.zone.boss && (!team || mission.i % 2 === 1 || last)) hitBoss();
+      const len = mission.plan.length;
+      if (mission.zone.boss && Math.floor(((mission.i + 1) * 5) / len) > Math.floor((mission.i * 5) / len)) hitBoss();
       setTimeout(() => {
         mission.i++;
         if (last) finishMission();
@@ -368,7 +421,7 @@ function finishMission() {
   app.innerHTML = `
     ${topBar()}
     <section class="reward comic-panel">
-      <h2 class="comic-title">${bossLine}${team ? "הצלתם את העיר, בר וירדן!" : `הצלת את העיר, ${H().name}!`}</h2>
+      <h2 class="comic-title">${bossLine}${team ? `הצלתם את העיר, ${teamNames()}!` : `הצלת את העיר, ${H().name}!`}</h2>
       <div class="gift-row">
         ${results.map((r) => `
           <div class="gift-card" style="--c:${HEROES[r.id].suit}">
@@ -394,7 +447,7 @@ function finishMission() {
   bindTop();
   Sfx.win();
   confetti();
-  Voice.say([...(bossSpoken ? [bossSpoken] : []), ...(team ? ["הִצַּלְתֶּם אֶת הָעִיר, בַּר וְיַרְדֵּן! הִנֵּה הַפְּרָסִים שֶׁלָּכֶם"] : ["הִצַּלְתָּ אֶת הָעִיר", H().spokenName, "הִנֵּה הַפְּרָס שֶׁלְּךָ"])]);
+  Voice.say([...(bossSpoken ? [bossSpoken] : []), ...(team ? ["הִצַּלְתֶּם אֶת הָעִיר!", ...teamSpoken(), "הִנֵּה הַפְּרָסִים שֶׁלָּכֶם"] : ["הִצַּלְתָּ אֶת הָעִיר", H().spokenName, "הִנֵּה הַפְּרָס שֶׁלְּךָ"])]);
   setTimeout(() => {
     app.querySelectorAll(".gift-box").forEach((x) => x.classList.add("hidden"));
     app.querySelectorAll(".gift-open").forEach((x) => x.classList.remove("hidden"));
@@ -480,7 +533,7 @@ function showParents() {
   on("[data-openall]", "change", (e) => { state.settings = { ...(state.settings || {}), openAll: e.target.checked }; save(); });
   on("[data-voice]", "change", (e) => Voice.setPrefs({ voiceName: e.target.value }));
   on("[data-rate]", "change", (e) => Voice.setPrefs({ rate: +e.target.value }));
-  on("[data-test]", "click", () => Voice.say("שָׁלוֹם בַּר וְיַרְדֵּן! מוּכָנִים לְהַצִּיל אֶת הָעִיר?"));
+  on("[data-test]", "click", () => Voice.say(["שָׁלוֹם", ...Object.values(HEROES).slice(0, -1).map((h) => h.spokenName), Object.values(HEROES).slice(-1)[0].spokenAnd, "מוּכָנִים לְהַצִּיל אֶת הָעִיר?"]));
   app.querySelectorAll("[data-reset]").forEach((b) => b.addEventListener("click", () => {
     const id = b.dataset.reset;
     if (confirm(`למחוק את כל ההתקדמות של ${HEROES[id].name}?`)) {

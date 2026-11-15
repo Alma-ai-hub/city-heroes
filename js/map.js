@@ -401,7 +401,7 @@ function tokenHTML() {
         <path d="M0 40 L-16 14 H16Z" fill="${INK}"/>
         <circle r="40" fill="#fff" stroke="${INK}" stroke-width="5"/>
         ${typeof team !== "undefined" && team
-          ? `<g transform="translate(-50 -30)">${heroFaceSVG("bar", 60)}</g><g transform="translate(-10 -30)">${heroFaceSVG("yarden", 60)}</g>`
+          ? TEAM.map((id, i) => `<g transform="translate(${-30 - (TEAM.length - 1) * 20 + i * 40} -30)">${heroFaceSVG(id, 60)}</g>`).join("")
           : `<g transform="translate(-36 -36)">${heroFaceSVG(hero, 72)}</g>`}
       </g>
     </g>`;

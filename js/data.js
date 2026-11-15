@@ -338,15 +338,20 @@ const POWERS = [
 ];
 
 // The hero kids. Colors are easy to change here.
-// power: "fire" or "bolt" decides the hero's look (flames or lightning).
+// power: "fire", "bolt" or "smash" decides the hero's look (flames, lightning, or a mighty punch).
+// spokenAnd = the name with "and" in front, for sentences like "בר וירדן".
 const HEROES = {
   bar: {
-    name: "בר", title: "בר איש האש", spokenTitle: "בַּר אִישׁ הָאֵשׁ", spokenName: "בַּר", power: "fire", emblem: "ב",
+    name: "בר", title: "בר איש האש", spokenTitle: "בַּר אִישׁ הָאֵשׁ", spokenName: "בַּר", spokenAnd: "וּבַר", power: "fire", emblem: "ב",
     suit: "#dc2626", light: "#f87171", dark: "#7f1d1d", cape: "#111827", lining: "#f97316", accent: "#facc15",
   },
   yarden: {
-    name: "ירדן", title: "ירדן איש הברק", spokenTitle: "יַרְדֵּן אִישׁ הַבָּרָק", spokenName: "יַרְדֵּן", power: "bolt", emblem: "י",
+    name: "ירדן", title: "ירדן איש הברק", spokenTitle: "יַרְדֵּן אִישׁ הַבָּרָק", spokenName: "יַרְדֵּן", spokenAnd: "וְיַרְדֵּן", power: "bolt", emblem: "י",
     suit: "#2563eb", light: "#60a5fa", dark: "#1e3a8a", cape: "#0f172a", lining: "#facc15", accent: "#fde047",
+  },
+  guy: {
+    name: "גיא", title: "גיא איש המחץ", spokenTitle: "גַּיְא אִישׁ הַמַּחַץ", spokenName: "גַּיְא", spokenAnd: "וְגַיְא", power: "smash", emblem: "ג",
+    suit: "#16a34a", light: "#4ade80", dark: "#14532d", cape: "#111827", lining: "#fb923c", accent: "#fde047", hair: "#1c1917",
   },
 };
 
