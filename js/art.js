@@ -305,3 +305,25 @@ function dragonSVG(hp = 5, max = 5) {
     <path d="M86 104 Q100 ${asleep ? 108 : 112} 114 104" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
   </svg>`;
 }
+
+// The hungry monster (gets full and sleepy as you answer).
+function monsterSVG(hp = 5, max = 5) {
+  const asleep = hp <= 0;
+  return `
+  <svg viewBox="0 0 220 220" class="boss-svg monster ${asleep ? "asleep" : ""}" aria-label="מפלצת">
+    ${max ? hpBar(hp, max) : ""}
+    <g stroke="${INK}" stroke-width="5" stroke-linejoin="round">
+      <path d="M50 70 L36 26 L76 56Z M170 70 L184 26 L144 56Z" fill="#a3e635"/>
+      <path d="M24 130 Q24 50 110 46 Q196 50 196 130 Q196 206 110 206 Q24 206 24 130Z" fill="#84cc16"/>
+      <path d="M40 196 l10 -16 l10 16 M160 196 l10 -16 l10 16" fill="#65a30d"/>
+    </g>
+    ${asleep
+      ? `<path d="M64 98 q16 10 32 0 M124 98 q16 10 32 0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>
+         <path d="M80 150 Q110 166 140 150" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/>
+         <text x="150" y="50" font-size="28" font-weight="900" fill="#65a30d" stroke="${INK}" stroke-width="1.5">Z z</text>`
+      : `<circle cx="80" cy="96" r="22" fill="#fff" stroke="${INK}" stroke-width="5"/><circle cx="140" cy="96" r="22" fill="#fff" stroke="${INK}" stroke-width="5"/>
+         <circle cx="84" cy="100" r="9" fill="${INK}"/><circle cx="136" cy="100" r="9" fill="${INK}"/>
+         <path d="M62 140 Q110 200 158 140Z" fill="#7f1d1d" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+         <path d="M76 142 l8 13 l8 -13 M128 142 l8 13 l8 -13" fill="#fff" stroke="${INK}" stroke-width="2.5"/>`}
+  </svg>`;
+}

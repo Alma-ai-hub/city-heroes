@@ -92,7 +92,7 @@ function findLetter(el, lvl, api) {
   const target = fresh(pool);
   const n = lvl <= 1 ? 2 : lvl === 2 ? 3 : 5;
   const opts = shuffle([target, ...otherLetters(target, n, lvl)]);
-  const speech = `מְצָא אֶת הָאוֹת ${letterName(target)}`;
+  const speech = ["מְצָא אֶת הָאוֹת", letterName(target)];
   choiceQuestion(el, api, {
     text: "מצא את האות שהגיבור מבקש",
     speech,
@@ -108,7 +108,7 @@ function soundStart(el, lvl, api) {
   const word = fresh(wordsUpTo(Math.max(lvl, 2)), (w) => w.w);
   const first = word.w[0];
   const opts = shuffle([first, ...otherLetters(first, 2, lvl)]);
-  const speech = `בְּאֵיזוֹ אוֹת מַתְחִילָה הַמִּלָּה ${word.n}?`;
+  const speech = ["בְּאֵיזוֹ אוֹת מַתְחִילָה הַמִּלָּה", word.n];
   choiceQuestion(el, api, {
     text: "באיזו אות מתחילה המילה?",
     speech,
@@ -130,7 +130,7 @@ function missingLetter(el, lvl, api) {
   const answer = letters[idx];
   const opts = shuffle([answer, ...otherLetters(answer, 2, lvl, letters)]);
   const shown = letters.map((l, i) => (i === idx ? `<span class="blank">?</span>` : l)).join("");
-  const speech = `אֵיזוֹ אוֹת חֲסֵרָה בַּמִּלָּה ${word.n}?`;
+  const speech = ["אֵיזוֹ אוֹת חֲסֵרָה בַּמִּלָּה", word.n];
   choiceQuestion(el, api, {
     text: "איזו אות חסרה במילה?",
     speech,
@@ -194,7 +194,7 @@ function buildWord(el, lvl, api) {
   const letters = [...word.w];
   const extra = lvl >= 2 ? otherLetters(letters[0], lvl - 1, lvl, letters) : [];
   const tiles = shuffle([...letters, ...extra]);
-  const speech = `בְּנֵה אֶת הַמִּלָּה ${word.n}`;
+  const speech = ["בְּנֵה אֶת הַמִּלָּה", word.n];
   el.innerHTML = `
     ${promptHTML("בנה את המילה מהאותיות")}
     <div class="visual"><button class="big-emoji tap" data-word>${word.e}</button></div>
@@ -242,7 +242,7 @@ function typeWord(el, lvl, api) {
   const list = wordsUpTo(lvl).filter((w) => w.w.length <= (lvl <= 1 ? 3 : 5));
   const word = fresh(list, (w) => w.w);
   const letters = [...word.w];
-  const speech = `הַקְלֵד אֶת הַמִּלָּה ${word.n} בַּמִּקְלֶדֶת`;
+  const speech = ["הַקְלֵד בַּמִּקְלֶדֶת אֶת הַמִּלָּה", word.n];
   el.innerHTML = `
     ${promptHTML("הקלד את המילה במקלדת")}
     <div class="visual"><button class="big-emoji tap" data-word>${word.e}</button></div>
@@ -289,11 +289,12 @@ function typeWord(el, lvl, api) {
 
 const TRACE_EASY = ["ו", "ד", "ר", "ג", "נ", "ז", "ל", "ה", "ב", "כ"];
 
-function traceLetter(el, lvl, api) {
-  const target = fresh(lvl <= 1 ? TRACE_EASY : LETTERS.map((x) => x.l));
-  const speech = `עֲקֹב עִם הָעַכְבָּר עַל הָאוֹת ${letterName(target)}. לְחַץ וְצַיֵּר עָלֶיהָ`;
+function traceLetter(el, lvl, api, forced) {
+  const target = forced || fresh(lvl <= 1 ? TRACE_EASY : LETTERS.map((x) => x.l));
+  const isNum = /\d/.test(target);
+  const speech = isNum ? ["עֲקֹב עִם הָעַכְבָּר עַל הַמִּסְפָּר", target, "לְחַץ וְצַיֵּר עָלָיו"] : ["עֲקֹב עִם הָעַכְבָּר עַל הָאוֹת", letterName(target), "לְחַץ וְצַיֵּר עָלֶיהָ"];
   el.innerHTML = `
-    ${promptHTML("עקוב עם העכבר אחרי צורת האות")}
+    ${promptHTML(isNum ? "עקוב עם העכבר אחרי צורת המספר" : "עקוב עם העכבר אחרי צורת האות")}
     <div class="trace-wrap"><canvas class="trace" width="320" height="320"></canvas></div>
     <div class="row-btns">
       <button class="soft-btn" data-clear>🧽 למחוק ולהתחיל שוב</button>
@@ -448,7 +449,7 @@ function arithmetic(el, lvl, api) {
   const picture = !pics ? "" : minus
     ? `<div class="count-box" dir="ltr">${Array.from({ length: a }, (_, i) => `<span class="${i >= a - b ? "gone" : ""}">${thing}</span>`).join("")}</div>`
     : `<div class="count-box" dir="ltr">${Array.from({ length: a }, () => `<span>${thing}</span>`).join("")}<b class="plus">+</b>${Array.from({ length: b }, () => `<span>${thing}</span>`).join("")}</div>`;
-  const speech = minus ? `כַּמָּה זֶה ${a} פָּחוֹת ${b}?` : `כַּמָּה זֶה ${a} וְעוֹד ${b}?`;
+  const speech = minus ? ["כַּמָּה זֶה", String(a), "פָּחוֹת", String(b)] : ["כַּמָּה זֶה", String(a), "וְעוֹד", String(b)];
   choiceQuestion(el, api, {
     text: "פתור את התרגיל",
     speech,
@@ -480,7 +481,7 @@ function startsWithPick(el, lvl, api) {
   const word = fresh(animals(lvl), (w) => w.w);
   const letter = word.w[0];
   const opts = shuffle([word, ...distinctStarts(word, animals(3), lvl <= 1 ? 2 : 3)]);
-  const speech = `אֵיזוֹ חַיָּה מַתְחִילָה בָּאוֹת ${letterName(letter)}?`;
+  const speech = ["אֵיזוֹ חַיָּה מַתְחִילָה בָּאוֹת", letterName(letter)];
   choiceQuestion(el, api, {
     text: "איזו חיה מתחילה באות הזאת?",
     speech,
@@ -498,7 +499,7 @@ function endLetter(el, lvl, api) {
   const word = fresh(list.filter((w) => w.a).length > 5 && Math.random() < 0.6 ? list.filter((w) => w.a) : list, (w) => w.w);
   const last = word.w[word.w.length - 1];
   const opts = shuffle([last, ...otherLetters(last, 2, lvl, [word.w[0]])]);
-  const speech = `בְּאֵיזוֹ אוֹת נִגְמֶרֶת הַמִּלָּה ${word.n}?`;
+  const speech = ["בְּאֵיזוֹ אוֹת נִגְמֶרֶת הַמִּלָּה", word.n];
   choiceQuestion(el, api, {
     text: "באיזו אות נגמרת המילה?",
     speech,
@@ -538,7 +539,7 @@ function makeTotal(el, lvl, api) {
   const need = total - have;
   const fruit = pick(FRUITS);
   const showEmpty = lvl <= 2;
-  const speech = `יֵשׁ ${have}. כַּמָּה צָרִיךְ עוֹד, כְּדֵי שֶׁיִּהְיוּ ${total}?`;
+  const speech = ["יֵשׁ", String(have), "כַּמָּה צָרִיךְ עוֹד, כְּדֵי שֶׁיִּהְיוּ", String(total)];
   choiceQuestion(el, api, {
     text: `יש ${have}. כמה צריך עוד כדי שיהיו ${total}?`,
     speech,
@@ -554,7 +555,7 @@ function makeTotal(el, lvl, api) {
 function payCoins(el, lvl, api) {
   const price = rand(lvl <= 1 ? 1 : 3, lvl <= 1 ? 5 : lvl === 2 ? 8 : 10);
   const fruit = pick(FRUITS);
-  const speech = `הַפְּרִי עוֹלֶה ${price} שְׁקָלִים. שִׂים בַּקֻּפָּה ${price} מַטְבְּעוֹת, וְלַחַץ לְשַׁלֵּם`;
+  const speech = ["הַפְּרִי עוֹלֶה", String(price), "שְׁקָלִים. שִׂים בַּקֻּפָּה אוֹתוֹ מִסְפָּר שֶׁל מַטְבְּעוֹת, וְלַחַץ לְשַׁלֵּם"];
   el.innerHTML = `
     ${promptHTML(`שים בקופה ${price} מטבעות`)}
     <div class="shop">
@@ -579,7 +580,7 @@ function payCoins(el, lvl, api) {
     if (n === price) { done = true; api.correct(); }
     else {
       api.mistake({ quiet: true });
-      api.say(n < price ? `יֵשׁ בַּקֻּפָּה ${n}. צָרִיךְ עוֹד` : `יֵשׁ בַּקֻּפָּה ${n}. זֶה יוֹתֵר מִדַּי`);
+      api.say(n < price ? ["יֵשׁ בַּקֻּפָּה", String(n), "צָרִיךְ עוֹד"] : ["יֵשׁ בַּקֻּפָּה", String(n), "זֶה יוֹתֵר מִדַּי"]);
     }
   });
   return speech;
@@ -611,7 +612,7 @@ function hearNumber(el, lvl, api) {
   const n = lvl <= 1 ? 3 : lvl === 2 ? 4 : 5;
   const set = new Set([answer]);
   while (set.size < n) set.add(rand(1, top));
-  const speech = `לְחַץ עַל הַמִּסְפָּר ${answer}`;
+  const speech = ["לְחַץ עַל הַמִּסְפָּר", String(answer)];
   choiceQuestion(el, api, {
     text: "לחץ על המספר ששמעת",
     speech,
@@ -648,7 +649,7 @@ function biggerNumber(el, lvl, api) {
 // ---------- Train station: claps (syllables) and words ----------
 function syllableClaps(el, lvl, api) {
   const word = fresh(WORDS.filter((w) => w.s > 0 && w.lvl <= Math.max(2, lvl)), (w) => w.w);
-  const speech = `כַּמָּה מְחִיאוֹת כַּפַּיִם יֵשׁ בַּמִּלָּה ${word.n}? ${word.n}`;
+  const speech = ["כַּמָּה מְחִיאוֹת כַּפַּיִם יֵשׁ בַּמִּלָּה", word.n];
   choiceQuestion(el, api, {
     text: "כמה מחיאות כפיים יש במילה?",
     speech,
@@ -686,7 +687,7 @@ function sameStart(el, lvl, api) {
   if (!match) return soundStart(el, lvl, api);
   const others = distinctStarts(target, pool.filter((w) => w.w !== match.w), 2);
   const opts = shuffle([match, ...others]);
-  const speech = `אֵיזוֹ תְּמוּנָה מַתְחִילָה כְּמוֹ ${target.n}?`;
+  const speech = ["אֵיזוֹ תְּמוּנָה מַתְחִילָה כְּמוֹ", target.n];
   choiceQuestion(el, api, {
     text: "איזו תמונה מתחילה באותו צליל?",
     speech,

@@ -1,8 +1,16 @@
-﻿// Speaking in Hebrew (the browser's built-in voice) and little sound effects.
+// Speaking in Hebrew, and little sound effects.
+// If recorded voice clips exist (audio/clips.js, made by tools/make-voice.js), the game plays
+// them; otherwise it uses the browser's built-in voice.
+// What to say can be a sentence, or a list of parts (["בְּאֵיזוֹ אוֹת מַתְחִילָה הַמִּלָּה", "כַּדּוּר"]),
+// so a recorded sentence and a recorded word can be played one after the other.
+
+const VOICE_KEY = (s) => String(s).replace(/\s+/g, " ").trim();
 
 const Voice = {
   voice: null,
   ready: false,
+  playing: [],
+  token: 0,
 
   init() {
     const pick = () => {
@@ -17,13 +25,35 @@ const Voice = {
     speechSynthesis.onvoiceschanged = pick;
   },
 
-  hasHebrew() {
-    return !!this.voice;
-  },
+  hasRecorded() { return !!(window.VOICE_CLIPS && Object.keys(window.VOICE_CLIPS).length); },
+  hasHebrew() { return this.hasRecorded() || !!this.voice; },
 
   say(text, onEnd) {
-    if (!("speechSynthesis" in window) || !text) { if (onEnd) onEnd(); return; }
-    speechSynthesis.cancel();
+    this.stop();
+    const parts = (Array.isArray(text) ? text : [text]).map(VOICE_KEY).filter(Boolean);
+    if (!parts.length) { if (onEnd) onEnd(); return; }
+    const clips = window.VOICE_CLIPS || {};
+    if (parts.every((p) => clips[p])) return this.playClips(parts.map((p) => clips[p]), onEnd);
+    this.speak(parts.join(" "), onEnd);
+  },
+
+  playClips(files, onEnd) {
+    const my = ++this.token;
+    let i = 0;
+    const next = () => {
+      if (my !== this.token) return;
+      if (i >= files.length) { if (onEnd) onEnd(); return; }
+      const a = new Audio(files[i++]);
+      this.playing.push(a);
+      a.onended = () => setTimeout(next, 60);
+      a.onerror = () => next();
+      a.play().catch(() => next());
+    };
+    next();
+  },
+
+  speak(text, onEnd) {
+    if (!("speechSynthesis" in window)) { if (onEnd) onEnd(); return; }
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "he-IL";
     if (this.voice) u.voice = this.voice;
@@ -34,6 +64,9 @@ const Voice = {
   },
 
   stop() {
+    this.token++;
+    this.playing.forEach((a) => { try { a.pause(); } catch (e) { /* ignore */ } });
+    this.playing = [];
     if ("speechSynthesis" in window) speechSynthesis.cancel();
   },
 };

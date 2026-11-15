@@ -99,7 +99,7 @@ function showHome() {
   }, 1500);
 }
 
-// ---------- Screen 2: the city map ----------
+// ---------- Screen 2: the city map, and each neighborhood ----------
 function topBar() {
   return `
     <header class="topbar" style="--c:${H().suit}">
@@ -107,21 +107,74 @@ function topBar() {
       <div class="me">${heroFaceSVG(hero, 52)}<b>${H().name}</b></div>
       ${logoHTML(true)}
       <div class="stars">⭐ ${me().stars}</div>
+      <button class="base-btn map-btn" data-map-top title="מפת העיר">🗺️</button>
       <button class="base-btn" data-base>🏰 הבסיס שלי</button>
     </header>`;
 }
+const openAll = () => !!(state.settings && state.settings.openAll);
+// Where the hero stands on the big map: the neighborhood of the last place visited.
+const worldSpotOf = (zoneId) => (zoneId === "fortress" ? "fortress" : (hoodOfZone(zoneId) || NEIGHBORHOODS[0]).id);
 
 function showMap(greet) {
   clearScreen();
   app.innerHTML = `
     ${topBar()}
     <section class="map">
-      <div class="map-caption">${burstSVG("!")}<span>לחץ על מקום במפה, והגיבור ירוץ לשם. יש במפה ${ZONES.length} עולמות: גלול למעלה כדי לגלות את כולם!</span></div>
-      <div class="map-frame">${mapSVG(me())}</div>
+      <div class="map-caption">${burstSVG("!")}<span>בחר שכונה בעיר. כל שכונה חדשה נפתחת אחרי שמבקרים בכל העולמות בשכונה הקודמת.</span></div>
+      <div class="map-frame">${worldSVG(me(), openAll())}</div>
     </section>`;
   bindTop();
   const svg = app.querySelector(".map-svg");
-  placeToken(svg, me().at);
+  const pts = worldPoints();
+  const here = worldSpotOf(me().at);
+  putToken(svg, roadLengths(svg, pts)[here]);
+  let busy = false;
+  svg.querySelectorAll(".region").forEach((r) => {
+    const go = () => {
+      if (busy) return;
+      const id = r.dataset.hood;
+      if (r.classList.contains("locked")) {
+        Sfx.oops();
+        shakeIt(r);
+        const i = NEIGHBORHOODS.findIndex((h) => h.id === id);
+        Voice.say(id === "fortress"
+          ? ["הַמִּבְצָר עוֹד נָעוּל. כְּדֵי לִפְתֹּחַ אוֹתוֹ, צָרִיךְ לְבַקֵּר בְּכׇל הָעוֹלָמוֹת בְּכׇל הַשְּׁכוּנוֹת"]
+          : ["הַשְּׁכוּנָה הַזֹּאת עוֹד נְעוּלָה. כְּדֵי לִפְתֹּחַ אוֹתָהּ, בַּקֵּר בְּכׇל הָעוֹלָמוֹת בַּשְּׁכוּנָה", NEIGHBORHOODS[i - 1].spoken]);
+        return;
+      }
+      busy = true;
+      Sfx.click();
+      if (id !== "fortress") Voice.say(NEIGHBORHOODS.find((h) => h.id === id).spoken);
+      walkToken(svg, pts, here, id, () => {
+        if (id === "fortress") { me().at = "fortress"; save(); startMission("fortress"); }
+        else showHood(id, true);
+      });
+    };
+    r.addEventListener("click", go);
+    r.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  });
+  if (greet) Voice.say(["שָׁלוֹם", H().spokenTitle, "דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?"]);
+}
+
+function showHood(hoodId, greet) {
+  clearScreen();
+  const h = NEIGHBORHOODS.find((x) => x.id === hoodId);
+  app.innerHTML = `
+    ${topBar()}
+    <section class="map">
+      <div class="hood-head" style="--h:${h.color}">
+        <button class="soft-btn big" data-world>🗺️ למפת העיר</button>
+        <h2 class="hood-title">${h.icon} ${h.title}</h2>
+        <span class="hood-hint">לחץ על עולם, והגיבור ירוץ לשם</span>
+      </div>
+      <div class="map-frame">${hoodSVG(hoodId, me())}</div>
+    </section>`;
+  bindTop();
+  on("[data-world]", "click", () => showMap(false));
+  const svg = app.querySelector(".map-svg");
+  const pts = hoodPoints(hoodId);
+  const here = h.zones.includes(me().at) ? me().at : "_start";
+  putToken(svg, roadLengths(svg, pts)[here]);
   let busy = false;
   svg.querySelectorAll(".spot").forEach((s) => {
     const go = () => {
@@ -129,23 +182,25 @@ function showMap(greet) {
       busy = true;
       Sfx.click();
       const to = s.dataset.zone;
-      const zone = ZONES.find((z) => z.id === to);
-      Voice.say(plain(zone.title));
-      walkToken(svg, me().at, to, () => {
-        me().at = to;
-        save();
-        startMission(to);
-      });
+      Voice.say(plain(ZONES.find((z) => z.id === to).title));
+      walkToken(svg, pts, here, to, () => { me().at = to; save(); startMission(to); });
     };
     s.addEventListener("click", go);
     s.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
   });
-  if (greet) Voice.say(`שָׁלוֹם ${H().spokenTitle}! דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?`);
+  if (greet) Voice.say(["בָּרוּךְ הַבָּא!", h.spoken]);
+}
+
+// Back from a mission: to the neighborhood of that place (or to the big map).
+function backToMap() {
+  const h = mission && hoodOfZone(mission.zone.id);
+  if (h) showHood(h.id); else showMap(false);
 }
 
 function bindTop() {
   on("[data-home]", "click", showHome);
   on("[data-base]", "click", showBase);
+  on("[data-map-top]", "click", () => showMap(false));
 }
 
 // ---------- Screen 3: a mission ----------
@@ -155,6 +210,7 @@ function bossHTML(zone, hp) {
   if (zone.boss === "robot") return robotSVG(hp, 5);
   if (zone.boss === "villain") return villainSVG(hp, 5);
   if (zone.boss === "dragon") return dragonSVG(hp, 5);
+  if (zone.boss === "monster") return monsterSVG(hp, 5);
   return "";
 }
 
@@ -162,7 +218,7 @@ function startMission(zoneId) {
   clearScreen();
   const zone = ZONES.find((z) => z.id === zoneId);
   mission = { zone, plan: planMission(zoneId), i: 0, mistakes: 0, hp: 5 };
-  const foe = zone.boss === "robot" ? robotSVG(5, 0) : zone.boss === "dragon" ? dragonSVG(5, 0) : villainSVG(5, 0);
+  const foe = { robot: robotSVG(5, 0), dragon: dragonSVG(5, 0), monster: monsterSVG(5, 0) }[zone.boss] || villainSVG(5, 0);
   app.innerHTML = `
     ${topBar()}
     <section class="intro comic-panel" style="--z:${zone.color}">
@@ -179,7 +235,7 @@ function startMission(zoneId) {
   bindTop();
   Voice.say(zone.story);
   on("[data-go]", "click", () => { Sfx.click(); showChallenge(); });
-  on("[data-back]", "click", () => showMap(false));
+  on("[data-back]", "click", backToMap);
 }
 
 function showChallenge() {
@@ -198,7 +254,7 @@ function showChallenge() {
       </div>
       <div class="feedback" id="feedback"></div>
     </section>`;
-  on("[data-quit]", "click", () => showMap(false));
+  on("[data-quit]", "click", backToMap);
   runChallenge();
 }
 
@@ -223,7 +279,7 @@ function runChallenge() {
       Sfx.good();
       const last = mission.i === mission.plan.length - 1;
       const word = pick(BURSTS);
-      Voice.say(Math.random() < 0.3 ? `${pick(PRAISE)} ${H().name}` : word);
+      Voice.say(Math.random() < 0.3 ? [pick(PRAISE), H().spokenName] : word);
       flash(plain(word));
       if (mission.zone.boss) hitBoss();
       setTimeout(() => {
@@ -269,8 +325,8 @@ function finishMission() {
   save();
 
   const what = reward.kind === "part" ? "חלק חדש לבסיס הגיבורים" : reward.kind === "power" ? "כוח מיוחד חדש" : "מדליה";
-  const bossLine = { robot: "הרובוט נרדם! ", villain: "ד״ר בלגן נרדם! ", dragon: "הדרקון נרדם! " }[mission.zone.boss] || "";
-  const bossSpoken = { robot: "הָרוֹבּוֹט נִרְדַּם! ", villain: "דּוֹקְטוֹר בַּלָּגָן נִרְדַּם! ", dragon: "הַדְּרָקוֹן נִרְדַּם! " }[mission.zone.boss] || "";
+  const bossLine = { robot: "הרובוט נרדם! ", villain: "ד״ר בלגן נרדם! ", dragon: "הדרקון נרדם! ", monster: "המפלצת נרדמה! " }[mission.zone.boss] || "";
+  const bossSpoken = { robot: "הָרוֹבּוֹט נִרְדַּם! ", villain: "דּוֹקְטוֹר בַּלָּגָן נִרְדַּם! ", dragon: "הַדְּרָקוֹן נִרְדַּם! ", monster: "הַמִּפְלֶצֶת נִרְדְּמָה! " }[mission.zone.boss] || "";
   app.innerHTML = `
     ${topBar()}
     <section class="reward comic-panel">
@@ -294,16 +350,16 @@ function finishMission() {
   bindTop();
   Sfx.win();
   confetti();
-  Voice.say(`${bossSpoken}הִצַּלְתָּ אֶת הָעִיר, ${H().name}! הִנֵּה הַפְּרָס שֶׁלְּךָ`);
+  Voice.say([...(bossSpoken ? [bossSpoken] : []), "הִצַּלְתָּ אֶת הָעִיר", H().spokenName, "הִנֵּה הַפְּרָס שֶׁלְּךָ"]);
   setTimeout(() => {
     app.querySelector(".gift-box")?.classList.add("hidden");
     app.querySelector(".gift-open")?.classList.remove("hidden");
-    Voice.say(`קִבַּלְתָּ ${reward.name}`);
+    Voice.say(["קִבַּלְתָּ", reward.name]);
   }, 2600);
   const zoneId = mission.zone.id;
   on("[data-base2]", "click", showBase);
   on("[data-again]", "click", () => startMission(zoneId));
-  on("[data-map]", "click", () => showMap(false));
+  on("[data-map]", "click", backToMap);
 }
 
 // ---------- Screen 5: the hero base ----------
@@ -331,7 +387,7 @@ function showBase() {
     </section>`;
   bindTop();
   on("[data-map]", "click", () => showMap(false));
-  Voice.say(p.done ? `זֶה הַבָּסִיס שֶׁלְּךָ, ${H().name}! הַפְּרָס הַבָּא: ${next.name}` : `הַבָּסִיס עוֹד רֵיק. צֵא לִמְשִׂימָה כְּדֵי לִבְנוֹת אוֹתוֹ!`);
+  Voice.say(p.done ? ["זֶה הַבָּסִיס שֶׁלְּךָ", H().spokenName, "הַפְּרָס הַבָּא:", next.name] : ["הַבָּסִיס עוֹד רֵיק. צֵא לִמְשִׂימָה כְּדֵי לִבְנוֹת אוֹתוֹ!"]);
 }
 
 // ---------- Parents corner ----------
@@ -358,14 +414,19 @@ function showParents() {
         </table></div>
       </div>
       <div class="panel">
+        <h3>שכונות</h3>
+        <label class="toggle"><input type="checkbox" data-openall ${openAll() ? "checked" : ""}> לפתוח את כל השכונות ואת המבצר מיד (בלי לחכות שיסיימו את השכונה הקודמת)</label>
+      </div>
+      <div class="panel">
         <h3>הקול</h3>
-        <p>קול: <b>${voiceName}</b></p>
+        <p>קול: <b>${Voice.hasRecorded() ? "קול מוקלט (טבעי)" : voiceName}</b></p>
         <button class="soft-btn" data-test>🔊 בדיקת קול</button>
         <p class="small-note">הקול הכי טוב בעברית נמצא בדפדפן Microsoft Edge.</p>
       </div>
       <button class="go-btn" data-back>חזרה למשחק</button>
     </section>`;
   on("[data-back]", "click", showHome);
+  on("[data-openall]", "change", (e) => { state.settings = { ...(state.settings || {}), openAll: e.target.checked }; save(); });
   on("[data-test]", "click", () => Voice.say("שָׁלוֹם בַּר וְיַרְדֵּן! מוּכָנִים לְהַצִּיל אֶת הָעִיר?"));
   app.querySelectorAll("[data-reset]").forEach((b) => b.addEventListener("click", () => {
     const id = b.dataset.reset;

@@ -62,7 +62,7 @@ function balloonLetters(el, lvl, api) {
   const others = otherLetters(target, 4, lvl);
   const labels = shuffle([...Array(nTargets).fill(target), ...Array.from({ length: total - nTargets }, (_, i) => others[i % others.length])]);
   const targets = labels.map((l, i) => (l === target ? i : -1)).filter((i) => i >= 0);
-  const speech = `פּוֹצֵץ אֶת כׇּל הַבָּלוֹנִים עִם הָאוֹת ${letterName(target)}`;
+  const speech = ["פּוֹצֵץ אֶת כׇּל הַבָּלוֹנִים עִם הָאוֹת", letterName(target)];
   return balloonField(el, api, { text: "פוצץ את כל הבלונים עם האות ששמעת", speech, labels, targets, showLetter: lvl <= 1 ? target : null });
 }
 
@@ -81,7 +81,7 @@ function balloonNumber(el, lvl, api) {
   const set = new Set([target]);
   while (set.size < (lvl <= 1 ? 5 : 7)) set.add(rand(1, top));
   const labels = shuffle([...set]);
-  const speech = `פּוֹצֵץ אֶת הַבָּלוֹן עִם הַמִּסְפָּר ${target}`;
+  const speech = ["פּוֹצֵץ אֶת הַבָּלוֹן עִם הַמִּסְפָּר", String(target)];
   return balloonField(el, api, { text: "פוצץ את הבלון עם המספר ששמעת", speech, labels, targets: [labels.indexOf(target)] });
 }
 
@@ -104,7 +104,7 @@ function cakeSVG(candles) {
 function placeCandles(el, lvl, api) {
   const n = lvl <= 1 ? rand(1, 5) : lvl === 2 ? rand(3, 8) : rand(5, 10);
   let count = 0, done = false;
-  const speech = `שִׂים עַל הָעוּגָה ${n} נֵרוֹת, וְלַחַץ סִיַּמְתִּי`;
+  const speech = ["שִׂים עַל הָעוּגָה", String(n), "נֵרוֹת, וְלַחַץ סִיַּמְתִּי"];
   el.innerHTML = `
     ${promptHTML(`שים על העוגה ${n} נרות`)}
     <div class="bake-row">
@@ -124,7 +124,7 @@ function placeCandles(el, lvl, api) {
   el.querySelector("[data-done]").addEventListener("click", () => {
     if (done) return;
     if (count === n) { done = true; api.correct(); }
-    else { api.mistake({ quiet: true }); api.say(count < n ? `יֵשׁ ${count} נֵרוֹת. צָרִיךְ עוֹד` : `יֵשׁ ${count} נֵרוֹת. זֶה יוֹתֵר מִדַּי`); }
+    else { api.mistake({ quiet: true }); api.say(count < n ? ["יֵשׁ", String(count), "נֵרוֹת. צָרִיךְ עוֹד"] : ["יֵשׁ", String(count), "נֵרוֹת. זֶה יוֹתֵר מִדַּי"]); }
   });
   return speech;
 }
@@ -154,7 +154,7 @@ function addPictures(el, lvl, api) {
   const a = rand(1, max - 1), b = rand(1, max - a);
   const item = pick(["🍪", "🧁", "🍩", "🥐", "🍓"]);
   const plate = (n) => `<div class="plate">${Array.from({ length: n }, () => `<i>${item}</i>`).join("")}</div>`;
-  const speech = `בַּצַּלַּחַת הָאַחַת יֵשׁ ${a}, וּבַשְּׁנִיָּה ${b}. כַּמָּה יֵשׁ בְּיַחַד?`;
+  const speech = ["בַּצַּלַּחַת הָאַחַת יֵשׁ", String(a), "וּבַשְּׁנִיָּה", String(b), "כַּמָּה יֵשׁ בְּיַחַד?"];
   choiceQuestion(el, api, {
     text: "כמה יש בשתי הצלחות ביחד?",
     speech,
@@ -326,7 +326,7 @@ function houseNumber(el, lvl, api) {
   else { const set = new Set(); while (set.size < 7) set.add(rand(1, 20)); nums = [...set].sort((a, b) => a - b); }
   const target = pick(nums);
   const roofs = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6"];
-  const speech = `כַּבֵּה אֶת הַשְּׂרֵפָה בַּבַּיִת מִסְפָּר ${target}`;
+  const speech = ["כַּבֵּה אֶת הַשְּׂרֵפָה בַּבַּיִת מִסְפָּר", String(target)];
   choiceQuestion(el, api, {
     text: "כבה את השריפה בבית עם המספר ששמעת",
     speech,
@@ -343,7 +343,7 @@ function ladderOrder(el, lvl, api) {
   const len = lvl <= 1 ? 4 : 5;
   const start = lvl <= 1 ? 1 : lvl === 2 ? rand(1, 6) : rand(5, 15);
   const nums = Array.from({ length: len }, (_, i) => start + i);
-  const speech = `בְּנֵה אֶת הַסֻּלָּם: לְחַץ עַל הַמִּסְפָּרִים לְפִי הַסֵּדֶר, מִ-${start} וָמַעְלָה`;
+  const speech = ["בְּנֵה אֶת הַסֻּלָּם: לְחַץ עַל הַמִּסְפָּרִים לְפִי הַסֵּדֶר. מַתְחִילִים בַּמִּסְפָּר", String(start)];
   el.innerHTML = `
     ${promptHTML(`בנה סולם לפי הסדר, מ־${start} ומעלה`)}
     <div class="ladder-wrap">
@@ -398,7 +398,7 @@ function scoreAdd(el, lvl, api) {
   const max = lvl <= 1 ? 5 : 10;
   const a = rand(1, max - 1), b = rand(1, max - a);
   const balls = lvl <= 2;
-  const speech = `הַקְּבוּצָה הָאֲדֻמָּה הִבְקִיעָה ${a}, וְהַכְּחֻלָּה הִבְקִיעָה ${b}. כַּמָּה שְׁעָרִים הָיוּ בְּסַךְ הַכֹּל?`;
+  const speech = ["הַקְּבוּצָה הָאֲדֻמָּה הִבְקִיעָה", String(a), "וְהַכְּחֻלָּה הִבְקִיעָה", String(b), "כַּמָּה שְׁעָרִים הָיוּ בְּסַךְ הַכֹּל?"];
   choiceQuestion(el, api, {
     text: "כמה שערים היו בסך הכול?",
     speech,
@@ -413,7 +413,7 @@ function scoreAdd(el, lvl, api) {
 function playersLeave(el, lvl, api) {
   const max = lvl <= 1 ? 5 : 10;
   const x = rand(2, max), y = rand(1, x - 1);
-  const speech = `עַל הַמִּגְרָשׁ הָיוּ ${x} שַׂחְקָנִים. ${y} הָלְכוּ הַבַּיְתָה. כַּמָּה נִשְׁאֲרוּ?`;
+  const speech = ["עַל הַמִּגְרָשׁ הָיוּ", String(x), "שַׂחְקָנִים.", String(y), "הָלְכוּ הַבַּיְתָה. כַּמָּה נִשְׁאֲרוּ?"];
   choiceQuestion(el, api, {
     text: `היו ${x} שחקנים. ${y} הלכו הביתה. כמה נשארו?`,
     speech,
@@ -567,7 +567,7 @@ function connectDots(el, lvl, api) {
     }
     if (next === dots.length) {
       el.querySelector(".dots-svg").classList.add("complete");
-      api.say(`גִּלִּיתָ אֶת הָאוֹת ${letterName(target)}!`);
+      api.say(["גִּלִּיתָ אֶת הָאוֹת", letterName(target)]);
       setTimeout(() => api.correct(), 900);
     } else gs[next].classList.add("next");
   }));
@@ -588,7 +588,7 @@ function attachKeyboard(el, api, onLetter) {
 function firstLetterType(el, lvl, api) {
   const word = fresh(wordsUpTo(Math.max(2, lvl)), (w) => w.w);
   const first = word.w[0];
-  const speech = `בְּאֵיזוֹ אוֹת מַתְחִילָה הַמִּלָּה ${word.n}? הַקְלֵד אוֹתָהּ`;
+  const speech = ["בְּאֵיזוֹ אוֹת מַתְחִילָה הַמִּלָּה", word.n, "הַקְלֵד אוֹתָהּ"];
   el.innerHTML = `
     ${promptHTML("הקלד את האות הראשונה של המילה")}
     <div class="visual first-row"><span class="slot big-slot">${lvl <= 1 ? `<i>${first}</i>` : "?"}</span><button class="big-emoji tap" data-word>${word.e}</button></div>
@@ -605,7 +605,7 @@ function firstLetterType(el, lvl, api) {
       done = true; slot.textContent = first; slot.classList.add("filled"); api.correct();
     } else {
       wrong++; shakeIt(slot); api.mistake({ quiet: true });
-      if (wrong === 1) api.say(`זֹאת הָאוֹת ${letterName(l)}. נַסֵּה שׁוּב`);
+      if (wrong === 1) api.say(["זֹאת הָאוֹת", letterName(l), "נַסֵּה שׁוּב"]);
       if (wrong >= 2) hintGlow(el.querySelector(`.key[data-l="${first}"]`));
     }
   });
@@ -627,7 +627,7 @@ function drumSVG() {
 function drumSyllables(el, lvl, api) {
   const word = fresh(WORDS.filter((w) => w.s > 0 && w.lvl <= Math.max(2, lvl)), (w) => w.w);
   let beats = 0, done = false, timer = null;
-  const speech = `תּוֹפֵף עַל הַתּוֹף, מַכָּה אַחַת לְכׇל חֵלֶק בַּמִּלָּה: ${word.n}`;
+  const speech = ["תּוֹפֵף עַל הַתּוֹף, מַכָּה אַחַת לְכׇל חֵלֶק בַּמִּלָּה", word.n];
   el.innerHTML = `
     ${promptHTML("תופף על התוף: מכה לכל חלק במילה")}
     <div class="music-row">
@@ -652,7 +652,7 @@ function drumSyllables(el, lvl, api) {
     if (beats === word.s) { done = true; api.correct(); }
     else {
       api.mistake({ quiet: true });
-      api.say(`תּוֹפַפְתָּ ${beats}. בּוֹא נַקְשִׁיב שׁוּב: ${word.n}`);
+      api.say(["תּוֹפַפְתָּ", String(beats), "בּוֹא נַקְשִׁיב שׁוּב:", word.n]);
       clearTimeout(timer); timer = setTimeout(() => { beats = 0; draw(); }, 500);
     }
   });
@@ -664,7 +664,7 @@ function longerWord(el, lvl, api) {
   let a, b;
   do { a = pick(pool); b = pick(pool); } while (Math.abs(a.s - b.s) < (lvl <= 1 ? 2 : 1));
   const longer = a.s > b.s ? a : b;
-  const speech = `אֵיזוֹ מִלָּה אֲרֻכָּה יוֹתֵר? ${a.n}, אוֹ ${b.n}?`;
+  const speech = ["אֵיזוֹ מִלָּה אֲרֻכָּה יוֹתֵר?", a.n, "אוֹ", b.n];
   choiceQuestion(el, api, {
     text: "איזו מילה ארוכה יותר? (יותר מחיאות כפיים)",
     speech,
@@ -773,7 +773,7 @@ function oneMoreLess(el, lvl, api) {
   const before = lvl >= 2 && Math.random() < 0.5;
   const n = before ? rand(2, top) : rand(1, top - 1);
   const answer = before ? n - 1 : n + 1;
-  const speech = before ? `אֵיזֶה מִסְפָּר בָּא לִפְנֵי ${n}?` : `אֵיזֶה מִסְפָּר בָּא אַחֲרֵי ${n}?`;
+  const speech = before ? ["אֵיזֶה מִסְפָּר בָּא לִפְנֵי", String(n)] : ["אֵיזֶה מִסְפָּר בָּא אַחֲרֵי", String(n)];
   const blocks = before ? [`?`, n] : [n, `?`];
   choiceQuestion(el, api, {
     text: before ? `איזה מספר בא לפני ${n}?` : `איזה מספר בא אחרי ${n}?`,
@@ -818,7 +818,7 @@ function numberBond(el, lvl, api) {
   const part = rand(1, total - 1);
   const answer = total - part;
   const balls = (n) => Array.from({ length: n }, () => "<i>⛄</i>").join("");
-  const speech = `יֵשׁ ${total} אַנְשֵׁי שֶׁלֶג. ${part} בַּצַּד הָאֶחָד. כַּמָּה בַּצַּד הַשֵּׁנִי?`;
+  const speech = ["יֵשׁ", String(total), "אַנְשֵׁי שֶׁלֶג.", String(part), "בַּצַּד הָאֶחָד. כַּמָּה בַּצַּד הַשֵּׁנִי?"];
   choiceQuestion(el, api, {
     text: `יש ${total} אנשי שלג. ${part} בצד אחד. כמה בצד השני?`,
     speech,
@@ -838,7 +838,7 @@ function numberBond(el, lvl, api) {
 function numberGrid(el, lvl, api) {
   const top = lvl <= 1 ? 10 : 20;
   const target = rand(1, top);
-  const speech = `חֲפֹר בַּמִּשְׁבֶּצֶת שֶׁל הַמִּסְפָּר ${target}`;
+  const speech = ["חֲפֹר בַּמִּשְׁבֶּצֶת שֶׁל הַמִּסְפָּר", String(target)];
   choiceQuestion(el, api, {
     text: lvl <= 1 ? `חפור במשבצת ${target}` : "חפור במשבצת של המספר ששמעת",
     speech,
@@ -876,8 +876,8 @@ function numberLineJump(el, lvl, api) {
   const from = back ? rand(jumps, top) : rand(0, top - jumps);
   const answer = back ? from - jumps : from + jumps;
   const speech = back
-    ? `הַצְּפַרְדֵּעַ עוֹמֶדֶת עַל ${from}, וְקוֹפֶצֶת ${jumps} קְפִיצוֹת אֲחוֹרָה. לְאָן הִיא מַגִּיעָה?`
-    : `הַצְּפַרְדֵּעַ עוֹמֶדֶת עַל ${from}, וְקוֹפֶצֶת ${jumps} קְפִיצוֹת קָדִימָה. לְאָן הִיא מַגִּיעָה?`;
+    ? ["הַצְּפַרְדֵּעַ עוֹמֶדֶת עַל", String(from), "וְקוֹפֶצֶת", String(jumps), "קְפִיצוֹת אֲחוֹרָה. לְאָן הִיא מַגִּיעָה?"]
+    : ["הַצְּפַרְדֵּעַ עוֹמֶדֶת עַל", String(from), "וְקוֹפֶצֶת", String(jumps), "קְפִיצוֹת קָדִימָה. לְאָן הִיא מַגִּיעָה?"];
   choiceQuestion(el, api, {
     text: `הצפרדע על ${from} וקופצת ${jumps} ${back ? "אחורה" : "קדימה"}. לאן תגיע?`,
     speech,
