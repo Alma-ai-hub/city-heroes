@@ -250,7 +250,7 @@ function typeWord(el, lvl, api) {
     <div class="keyboard" dir="ltr">
       ${KEY_ROWS.map((row) => `<div class="krow">${row.map(([c, l]) => `<button class="key" data-l="${l}">${l}</button>`).join("")}</div>`).join("")}
     </div>
-    <p class="small-note">אפשר ללחוץ על המקלדת של המחשב או על האותיות כאן</p>`;
+    <p class="small-note">${IS_TOUCH ? "לחץ על האותיות כאן" : "אפשר ללחוץ על המקלדת של המחשב או על האותיות כאן"}</p>`;
   wireSpeak(el, api, speech);
   el.querySelector("[data-word]").addEventListener("click", () => api.say(word.n));
   const slots = el.querySelectorAll(".slot");

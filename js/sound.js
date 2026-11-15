@@ -1,28 +1,78 @@
 // Speaking in Hebrew, and little sound effects.
 // If recorded voice clips exist (audio/clips.js, made by tools/make-voice.js), the game plays
-// them; otherwise it uses the browser's built-in voice.
+// them; otherwise it uses the device's built-in voice (the best Hebrew one it has, or the one
+// chosen in the parents corner).
 // What to say can be a sentence, or a list of parts (["בְּאֵיזוֹ אוֹת מַתְחִילָה הַמִּלָּה", "כַּדּוּר"]),
 // so a recorded sentence and a recorded word can be played one after the other.
+//
+// Tablets and phones only allow sound after the first touch, so the first touch "unlocks" it.
 
 const VOICE_KEY = (s) => String(s).replace(/\s+/g, " ").trim();
+const VOICE_PREFS_KEY = "city-heroes-voice";
+const IS_TOUCH = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+// A tiny silent sound, used to unlock audio on iPad/iPhone.
+// (a tenth of a second of silence, as a WAV file made right here)
+const SILENT_SOUND = (() => {
+  const n = 800, buf = new Uint8Array(44 + n);
+  const dv = new DataView(buf.buffer);
+  const str = (o, t) => [...t].forEach((c, k) => dv.setUint8(o + k, c.charCodeAt(0)));
+  str(0, "RIFF"); dv.setUint32(4, 36 + n, true); str(8, "WAVEfmt "); dv.setUint32(16, 16, true);
+  dv.setUint16(20, 1, true); dv.setUint16(22, 1, true); dv.setUint32(24, 8000, true); dv.setUint32(28, 8000, true);
+  dv.setUint16(32, 1, true); dv.setUint16(34, 8, true); str(36, "data"); dv.setUint32(40, n, true);
+  buf.fill(128, 44);
+  return "data:audio/wav;base64," + btoa(String.fromCharCode(...buf));
+})();
 
 const Voice = {
   voice: null,
+  voices: [],
   ready: false,
-  playing: [],
   token: 0,
+  player: null, // one audio player, reused (iPad only lets an "unlocked" player play)
+  prefs: (() => { try { return JSON.parse(localStorage.getItem(VOICE_PREFS_KEY)) || {}; } catch (e) { return {}; } })(),
 
   init() {
-    const pick = () => {
-      const voices = speechSynthesis.getVoices();
-      const he = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("he"));
-      // Natural "Online" voices (in Edge) sound much better.
-      this.voice = he.find((v) => /online|natural/i.test(v.name)) || he[0] || null;
-      this.ready = true;
+    this.player = new Audio();
+    this.player.preload = "auto";
+    if ("speechSynthesis" in window) {
+      this.pickVoice();
+      speechSynthesis.onvoiceschanged = () => this.pickVoice();
+    }
+    // The first touch or click unlocks speech and sound (needed on tablets and phones).
+    const unlock = () => {
+      try {
+        this.player.src = SILENT_SOUND;
+        this.player.play().catch(() => {});
+      } catch (e) { /* ignore */ }
+      Sfx.wake();
+      if ("speechSynthesis" in window) {
+        const u = new SpeechSynthesisUtterance(" ");
+        u.volume = 0;
+        speechSynthesis.speak(u);
+      }
+      document.removeEventListener("pointerdown", unlock, true);
+      document.removeEventListener("keydown", unlock, true);
     };
-    if (!("speechSynthesis" in window)) return;
-    pick();
-    speechSynthesis.onvoiceschanged = pick;
+    document.addEventListener("pointerdown", unlock, true);
+    document.addEventListener("keydown", unlock, true);
+  },
+
+  // Rank the device's Hebrew voices: natural/enhanced ones first.
+  pickVoice() {
+    const all = speechSynthesis.getVoices();
+    const he = all.filter((v) => v.lang && /^he|^iw/i.test(v.lang));
+    const score = (v) => (/natural|online|neural/i.test(v.name) ? 40 : 0) + (/premium|enhanced|plus/i.test(v.name) ? 30 : 0)
+      + (/google/i.test(v.name) ? 15 : 0) + (v.localService ? 0 : 5);
+    this.voices = he.sort((a, b) => score(b) - score(a));
+    const chosen = this.prefs.voiceName && this.voices.find((v) => v.name === this.prefs.voiceName);
+    this.voice = chosen || this.voices[0] || null;
+    this.ready = true;
+  },
+
+  setPrefs(p) {
+    this.prefs = { ...this.prefs, ...p };
+    try { localStorage.setItem(VOICE_PREFS_KEY, JSON.stringify(this.prefs)); } catch (e) { /* ignore */ }
+    if ("speechSynthesis" in window) this.pickVoice();
   },
 
   hasRecorded() { return !!(window.VOICE_CLIPS && Object.keys(window.VOICE_CLIPS).length); },
@@ -38,15 +88,15 @@ const Voice = {
   },
 
   playClips(files, onEnd) {
-    const my = ++this.token;
+    const my = this.token;
+    const a = this.player;
     let i = 0;
     const next = () => {
       if (my !== this.token) return;
       if (i >= files.length) { if (onEnd) onEnd(); return; }
-      const a = new Audio(files[i++]);
-      this.playing.push(a);
       a.onended = () => setTimeout(next, 60);
       a.onerror = () => next();
+      a.src = files[i++];
       a.play().catch(() => next());
     };
     next();
@@ -54,28 +104,39 @@ const Voice = {
 
   speak(text, onEnd) {
     if (!("speechSynthesis" in window)) { if (onEnd) onEnd(); return; }
+    const my = this.token;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "he-IL";
     if (this.voice) u.voice = this.voice;
-    u.rate = 0.88;
-    u.pitch = 1.1;
+    u.rate = this.prefs.rate || 0.9;
+    u.pitch = 1.05;
     if (onEnd) u.onend = onEnd;
-    speechSynthesis.speak(u);
+    // A short pause after stopping the previous sentence: some tablets drop speech said right away.
+    setTimeout(() => {
+      if (my !== this.token) return;
+      try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
+      speechSynthesis.speak(u);
+    }, 80);
   },
 
   stop() {
     this.token++;
-    this.playing.forEach((a) => { try { a.pause(); } catch (e) { /* ignore */ } });
-    this.playing = [];
+    if (this.player) { try { this.player.pause(); } catch (e) { /* ignore */ } }
     if ("speechSynthesis" in window) speechSynthesis.cancel();
   },
 };
 
 const Sfx = {
   ctx: null,
-  tone(freq, start, dur, type = "sine", vol = 0.18) {
+  wake() {
     try {
       this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === "suspended") this.ctx.resume();
+    } catch (e) { /* ignore */ }
+  },
+  tone(freq, start, dur, type = "sine", vol = 0.18) {
+    try {
+      this.wake();
       const t = this.ctx.currentTime + start;
       const o = this.ctx.createOscillator();
       const g = this.ctx.createGain();

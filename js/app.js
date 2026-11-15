@@ -135,6 +135,7 @@ function showMap(greet) {
     ${topBar()}
     <section class="map">
       <div class="map-caption">${burstSVG("!")}<span>בחר שכונה בעיר. כל שכונה חדשה נפתחת אחרי שמבקרים בכל העולמות בשכונה הקודמת.</span></div>
+      <div class="rotate-hint">🔄 כדאי לסובב את הטאבלט לרוחב, כדי לראות את המפה בגדול</div>
       <div class="map-frame">${worldSVG(mp(), openAll())}</div>
     </section>`;
   bindTop();
@@ -181,6 +182,7 @@ function showHood(hoodId, greet) {
         <h2 class="hood-title">${h.icon} ${h.title}</h2>
         <span class="hood-hint">לחץ על עולם, והגיבור ירוץ לשם</span>
       </div>
+      <div class="rotate-hint">🔄 כדאי לסובב את הטאבלט לרוחב, כדי לראות את המפה בגדול</div>
       <div class="map-frame">${hoodSVG(hoodId, mp())}</div>
     </section>`;
   bindTop();
@@ -436,7 +438,6 @@ function showBase(whose) {
 // ---------- Parents corner ----------
 function showParents() {
   clearScreen();
-  const voiceName = Voice.voice ? Voice.voice.name : "לא נמצא קול בעברית";
   app.innerHTML = `
     <section class="parents comic-panel">
       <h2 class="comic-title">👨‍👩‍👦 פינת ההורים</h2>
@@ -462,14 +463,23 @@ function showParents() {
       </div>
       <div class="panel">
         <h3>הקול</h3>
-        <p>קול: <b>${Voice.hasRecorded() ? "קול מוקלט (טבעי)" : voiceName}</b></p>
+        ${Voice.hasRecorded() ? "<p>קול: <b>קול מוקלט (טבעי)</b></p>" : `
+        <p>בחרו את הקול בעברית שנשמע הכי טוב במכשיר הזה:</p>
+        <select class="voice-select" data-voice>${Voice.voices.length ? Voice.voices.map((v) => `<option value="${v.name}" ${Voice.voice && v.name === Voice.voice.name ? "selected" : ""}>${v.name}</option>`).join("") : "<option>לא נמצא קול בעברית במכשיר הזה</option>"}</select>
+        <label class="toggle">מהירות דיבור: <input type="range" min="0.6" max="1.2" step="0.05" value="${Voice.prefs.rate || 0.9}" data-rate></label>`}
         <button class="soft-btn" data-test>🔊 בדיקת קול</button>
-        <p class="small-note">הקול הכי טוב בעברית נמצא בדפדפן Microsoft Edge.</p>
+        <details class="voice-help"><summary>איך מקבלים קול עברי טוב יותר בטאבלט?</summary>
+          <p><b>אייפד / אייפון:</b> הגדרות ← נגישות ← תוכן מוקרא (Spoken Content) ← קולות ← עברית ← להוריד את <b>כרמית (משופר)</b>. אחר כך לבחור אותו כאן.</p>
+          <p><b>טאבלט אנדרואיד:</b> הגדרות ← נגישות ← המרת טקסט לדיבור ← מנוע של Google ← להתקין נתוני קול בעברית (באיכות גבוהה). אחר כך לבחור אותו כאן.</p>
+          <p><b>מחשב:</b> הקול הכי טוב בעברית נמצא בדפדפן Microsoft Edge.</p>
+        </details>
       </div>
       <button class="go-btn" data-back>חזרה למשחק</button>
     </section>`;
   on("[data-back]", "click", showHome);
   on("[data-openall]", "change", (e) => { state.settings = { ...(state.settings || {}), openAll: e.target.checked }; save(); });
+  on("[data-voice]", "change", (e) => Voice.setPrefs({ voiceName: e.target.value }));
+  on("[data-rate]", "change", (e) => Voice.setPrefs({ rate: +e.target.value }));
   on("[data-test]", "click", () => Voice.say("שָׁלוֹם בַּר וְיַרְדֵּן! מוּכָנִים לְהַצִּיל אֶת הָעִיר?"));
   app.querySelectorAll("[data-reset]").forEach((b) => b.addEventListener("click", () => {
     const id = b.dataset.reset;

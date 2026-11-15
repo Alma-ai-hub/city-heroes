@@ -2,9 +2,17 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>גיבורי העיר</title>
   <link rel="icon" href="icon.svg">
+  <!-- Open like an app when added to a tablet's home screen -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="גיבורי העיר">
+  <meta name="theme-color" content="#1e1b4b">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Karantina:wght@700&family=Rubik:wght@400;600;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -39,5 +47,9 @@
   <script src="js/challenges3.js"></script>
   <script src="js/map.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    // Play without internet too (only works on the website, not from the file on the computer).
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+  </script>
 </body>
 </html>
