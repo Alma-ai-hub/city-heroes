@@ -733,3 +733,85 @@ button { font-family: inherit; cursor: pointer; border: none; color: inherit; }
   .sort-item { width: 84px; height: 84px; }
   .hood-title { font-size: 38px; }
 }
+
+/* ===================== richer, game-like look (2026-11-15) ===================== */
+/* Light and shadow on the drawn places, neighborhoods and base parts */
+.spot-art, .region-art, .base-part.built, .boss-svg, .intro-icon { filter: url(#toon3d); }
+.region.locked .region-art { filter: url(#toon3d) grayscale(.8); }
+
+/* Panels: soft paper with light from the top, a halftone corner */
+.comic-panel {
+  background:
+    radial-gradient(circle at 100% 100%, #0000000d 0 2px, transparent 2.5px) 0 0 / 12px 12px,
+    radial-gradient(ellipse at 20% 0%, #ffffff 0%, #fffdf5 45%, #fdf3d9 100%);
+  position: relative;
+}
+.comic-panel::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 6px 0 #ffffffcc, inset 0 -10px 24px #00000012;
+}
+
+/* Buttons and cards look pressable: a shine on top, a darker edge at the bottom */
+.option, .soft-btn, .tile, .sort-item, .match-item, .food, .icon-btn, .key, .swatch, .coin, .mem-front, .maze-cell, .hero-stars, .item {
+  background-image: linear-gradient(180deg, #ffffffcc 0%, #ffffff00 48%, #00000010 100%);
+}
+.option, .tile, .sort-item, .match-item, .food, .soft-btn {
+  box-shadow: 6px 6px 0 var(--ink), inset 0 -7px 0 #00000014, inset 0 4px 0 #ffffffe6;
+}
+.option:active, .tile:active, .sort-item:active, .match-item:active, .soft-btn:active { box-shadow: 2px 2px 0 var(--ink), inset 0 -3px 0 #00000014; }
+.go-btn {
+  background: linear-gradient(180deg, #fff59d 0%, #facc15 45%, #f59e0b 100%);
+  box-shadow: 6px 6px 0 var(--ink), inset 0 -8px 0 #b4530955, inset 0 5px 0 #ffffffcc;
+  text-shadow: 2px 2px 0 #fff8;
+}
+.option.right { background: linear-gradient(180deg, #86efac, #22c55e 50%, #15803d); }
+.tile { background-color: var(--yellow); }
+.topbar { background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%); box-shadow: 6px 6px 0 var(--ink), inset 0 -6px 0 #0000000f; }
+.zone-tag, .base-btn, .hood-title { background-image: linear-gradient(180deg, #ffffff55 0%, #ffffff00 50%, #00000022 100%); }
+.challenge { border-top-width: 18px; }
+.prompt .bubble { background: linear-gradient(180deg, #ffffff, #f8fafc); }
+.big-emoji, .emoji-opt, .letter-card, .read-word { filter: drop-shadow(4px 5px 0 #00000026); }
+.letter-card { background: linear-gradient(160deg, #fff59d, #facc15 55%, #eab308); }
+.progress span { box-shadow: inset 0 -4px 0 #0000001a, inset 0 3px 0 #ffffffaa; }
+.map-frame { box-shadow: 10px 10px 0 var(--ink), 0 20px 50px #0008; }
+
+/* ===================== two-player mode ===================== */
+.team-btn {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 26px; padding: 8px 22px 8px 14px;
+  background: linear-gradient(90deg, #dc2626, #7c3aed 50%, #2563eb); color: #fff;
+  border: 5px solid var(--ink); border-radius: 999px; box-shadow: 6px 6px 0 var(--ink), inset 0 4px 0 #ffffff66;
+  font-family: var(--display); font-size: 40px; text-shadow: 2px 2px 0 var(--ink); transition: transform .15s;
+}
+.team-btn:hover { transform: scale(1.05) rotate(-1deg); }
+.team-btn span { margin-inline-start: 10px; }
+.me.duo { gap: 0; }
+.me.duo svg + svg { margin-inline-start: -12px; }
+.turn-tag {
+  display: flex; align-items: center; gap: 8px; background: var(--c); color: #fff; padding: 2px 16px 2px 6px;
+  border: 4px solid var(--ink); border-radius: 999px; box-shadow: 4px 4px 0 var(--ink);
+  font-family: var(--display); font-size: 34px; text-shadow: 2px 2px 0 var(--ink); animation: pop .5s;
+}
+.progress span.now { background: var(--p, var(--z)); }
+.progress span[style] { border-color: var(--p); }
+.vs-side.duo { width: 280px; gap: 0; }
+.vs-side.duo .hero-svg + .hero-svg { margin-inline-start: -30px; }
+.gift-row { display: flex; justify-content: center; gap: 26px; flex-wrap: wrap; }
+.gift-card { flex: 1; min-width: 300px; max-width: 480px; }
+.gift-row .gift-card + .gift-card { border-inline-start: 4px dashed #cbd5e1; padding-inline-start: 20px; }
+.gift-who { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--display); font-size: 40px; color: var(--c); }
+.gift-row .gift-card .gift { min-height: 230px; }
+
+/* ===================== the hero base ===================== */
+.base-pic.big { max-width: 980px; margin: 0 auto; }
+.base-svg { border-width: 6px; box-shadow: 8px 8px 0 var(--ink), 0 18px 40px #0006; }
+.base-part.ghost-part * { fill: none !important; stroke: #ffffffcc !important; stroke-width: 3px !important; stroke-dasharray: 9 7; }
+.base-part.ghost-part { opacity: .75; }
+.base-part.ghost-part text { display: none; }
+.base-part.built { animation: none; }
+.base-svg .wave { animation: flagWave 1.6s ease-in-out infinite; transform-origin: 454px 100px; transform-box: view-box; }
+@keyframes flagWave { 50% { transform: skewY(-4deg) scaleX(.96); } }
+.base-svg .signal { animation: twinkle 1.2s ease-in-out infinite; }
+.base-hero-svg { filter: drop-shadow(6px 8px 0 #0004); }
+.base-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+.base-tab { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; padding: 6px 16px 6px 8px; border: 4px solid var(--ink); border-radius: 999px; background: #fff; box-shadow: 4px 4px 0 var(--ink); }
+.base-tab.on { background: var(--c); color: #fff; text-shadow: 1px 1px 0 var(--ink); }

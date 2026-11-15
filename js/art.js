@@ -173,31 +173,102 @@ function heroFaceSVG(hero, size = 70) {
 }
 
 
-// The hero base: each part appears once it was earned.
-function baseSVG(parts, hero) {
+// The hero base: a big scene. Earned parts are drawn in full color; parts still to come
+// are shown as a dotted outline, so the kids can see what they're building towards.
+function baseSVG(parts, hero, powers = []) {
   const h = HEROES[hero];
+  const u = "b" + ++artId;
   const has = (id) => parts.includes(id);
-  const g = (id, inner) => `<g class="${has(id) ? "" : "ghost"}" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round">${inner}</g>`;
+  const fire = h.power === "fire";
+  const part = (id, inner) => `<g class="base-part ${has(id) ? "built" : "ghost-part"}">${inner}</g>`;
+  const S = `stroke="${INK}" stroke-width="4" stroke-linejoin="round"`;
+  const sky = fire ? ["#4c1d95", "#db2777", "#fb923c", "#fde68a"] : ["#0b1033", "#1e3a8a", "#3b82f6", "#a5f3fc"];
   return `
-  <svg viewBox="0 0 400 300" class="base-svg" aria-label="בסיס הגיבורים">
-    <defs><radialGradient id="bsky" cx=".5" cy=".9" r="1"><stop offset="0" stop-color="#fde68a"/><stop offset=".45" stop-color="#f472b6"/><stop offset="1" stop-color="#312e81"/></radialGradient></defs>
-    <rect x="0" y="0" width="400" height="300" fill="url(#bsky)"/>
-    <g fill="#1e1b4b" opacity=".55"><rect x="0" y="170" width="40" height="80"/><rect x="44" y="140" width="30" height="110"/><rect x="330" y="150" width="34" height="100"/><rect x="368" y="185" width="32" height="70"/></g>
-    <circle cx="268" cy="40" r="20" fill="#fef9c3" stroke="${INK}" stroke-width="3"/>
-    <rect x="0" y="240" width="400" height="60" fill="#4ade80" stroke="${INK}" stroke-width="3"/>
-    ${g("floor", `<rect x="70" y="228" width="240" height="16" rx="4" fill="#92400e"/>`)}
-    ${g("walls", `<rect x="85" y="140" width="210" height="90" fill="${h.light}"/><path d="M85 165 h210 M85 195 h210" stroke-width="2" opacity=".35"/>`)}
-    ${g("door", `<rect x="170" y="172" width="40" height="58" rx="18" fill="${h.dark}"/><path d="M190 182 l12 4 v8 q0 9 -12 14 q-12 -5 -12 -14 v-8z" fill="${h.accent}" stroke-width="2.5"/>`)}
-    ${g("windows", `<rect x="105" y="158" width="42" height="32" rx="5" fill="#fef08a"/><rect x="233" y="158" width="42" height="32" rx="5" fill="#fef08a"/><path d="M126 158 v32 M254 158 v32" stroke-width="2.5"/>`)}
-    ${g("roof", `<path d="M70 142 L190 80 L310 142Z" fill="${h.suit}"/>`)}
-    ${g("flag", `<rect x="188" y="40" width="5" height="44" fill="#475569"/><path d="M193 42 L230 52 L193 64Z" fill="${h.accent}"/>`)}
-    ${g("tower", `<rect x="300" y="100" width="34" height="130" fill="#64748b"/><rect x="294" y="90" width="46" height="16" fill="#334155"/><rect x="309" y="120" width="16" height="16" fill="#fef08a"/>`)}
-    ${g("antenna", `<rect x="315" y="56" width="4" height="36" fill="#475569"/><circle cx="317" cy="52" r="7" fill="#ef4444"/>`)}
-    ${g("garden", `<circle cx="30" cy="250" r="12" fill="#facc15"/><circle cx="58" cy="256" r="10" fill="#f472b6"/><circle cx="356" cy="254" r="11" fill="#fb923c"/>`)}
-    ${g("lamp", `<rect x="40" y="170" width="6" height="70" fill="#334155"/><circle cx="43" cy="166" r="10" fill="#fde047"/>`)}
-    ${has("lamp") ? `<path d="M43 166 L10 40 L90 40Z" fill="#fde04744"/>` : ""}
-    ${g("pad", `<ellipse cx="200" cy="276" rx="62" ry="13" fill="#334155"/><text x="200" y="282" text-anchor="middle" font-size="15" font-weight="900" fill="#fde047" stroke="none" font-family="Arial">H</text>`)}
-    ${g("rocket", `<path d="M360 70 q14 22 10 60 h-20 q-4 -38 10 -60z" fill="#e2e8f0"/><circle cx="360" cy="100" r="6" fill="#38bdf8"/><path d="M350 130 l-10 14 h12z M370 130 l10 14 h-12z" fill="#ef4444"/>`)}
+  <svg viewBox="0 0 900 560" class="base-svg" aria-label="בסיס הגיבורים">
+    <defs>
+      <linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1">${sky.map((c, i) => `<stop offset="${i / 3}" stop-color="${c}"/>`).join("")}</linearGradient>
+      <linearGradient id="${u}hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
+      <linearGradient id="${u}mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${fire ? "#7c3aed" : "#1e40af"}"/><stop offset="1" stop-color="${fire ? "#be185d" : "#0f172a"}"/></linearGradient>
+      <linearGradient id="${u}wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${h.light}"/><stop offset=".55" stop-color="${h.suit}"/><stop offset="1" stop-color="${h.dark}"/></linearGradient>
+      <linearGradient id="${u}dome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="${h.light}"/><stop offset="1" stop-color="${h.dark}"/></linearGradient>
+      <linearGradient id="${u}stoneTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e8f0"/><stop offset="1" stop-color="#94a3b8"/></linearGradient>
+      <linearGradient id="${u}stoneFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64748b"/><stop offset="1" stop-color="#334155"/></linearGradient>
+      <linearGradient id="${u}win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef9c3"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+      <linearGradient id="${u}gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a16207"/><stop offset=".5" stop-color="#fde047"/><stop offset="1" stop-color="#a16207"/></linearGradient>
+      <linearGradient id="${u}metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#475569"/><stop offset=".45" stop-color="#e2e8f0"/><stop offset="1" stop-color="#475569"/></linearGradient>
+      <radialGradient id="${u}glow"><stop offset="0" stop-color="#fef08a" stop-opacity=".95"/><stop offset="1" stop-color="#fef08a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${u}sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="${fire ? "#fde68a" : "#e0f2fe"}"/><stop offset="1" stop-color="${fire ? "#fde68a" : "#e0f2fe"}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${u}flame" cx=".5" cy=".2" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fde047"/><stop offset=".7" stop-color="#f97316"/><stop offset="1" stop-color="#dc2626"/></radialGradient>
+    </defs>
+
+    <!-- sky, sun or moon, stars -->
+    <rect width="900" height="560" fill="url(#${u}sky)"/>
+    <circle cx="${fire ? 640 : 700}" cy="${fire ? 200 : 90}" r="90" fill="url(#${u}sun)"/>
+    <circle cx="${fire ? 640 : 700}" cy="${fire ? 200 : 90}" r="36" fill="${fire ? "#fef3c7" : "#f8fafc"}" ${S}/>
+    ${fire ? "" : `<circle cx="714" cy="80" r="30" fill="#0b1033"/>`}
+    ${fire ? "" : `<g fill="#fff">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 900}" cy="${(i * 61) % 230}" r="${i % 4 ? 1.6 : 2.8}" class="${i % 5 ? "" : "twinkle"}"/>`).join("")}</g>`}
+    <g fill="#ffffffcc" stroke="${INK}" stroke-width="3">
+      <path d="M90 120 q-6 -26 22 -26 q8 -22 34 -12 q22 -16 40 6 q28 0 22 26 Z"/>
+      <path d="M460 70 q-6 -20 18 -20 q6 -18 28 -10 q18 -12 32 4 q22 0 18 20 Z" opacity=".8"/>
+    </g>
+
+    <!-- mountains and city far away -->
+    <path d="M0 330 L120 210 L210 290 L330 170 L450 280 L560 190 L690 300 L800 200 L900 280 V420 H0Z" fill="url(#${u}mtn)" opacity=".85"/>
+    <path d="M330 170 L300 200 L330 192 L360 205Z M800 200 L775 225 L800 218 L825 228Z" fill="#fff" opacity=".8"/>
+    <g fill="${fire ? "#3b0764" : "#020617"}" opacity=".8">
+      ${[[40, 300, 40, 110], [86, 270, 34, 140], [126, 320, 46, 90], [760, 290, 40, 120], [806, 260, 36, 150], [846, 310, 50, 100]].map(([x, y, w, hh]) => `<rect x="${x}" y="${y}" width="${w}" height="${hh}"/>`).join("")}
+    </g>
+    <g fill="#fde68a" opacity=".9">${[[50, 320], [62, 340], [96, 290], [96, 320], [140, 340], [770, 310], [818, 280], [818, 320], [860, 330], [770, 340]].map(([x, y]) => `<rect x="${x}" y="${y}" width="8" height="10"/>`).join("")}</g>
+
+    <!-- the hill -->
+    <path d="M0 430 Q200 380 450 392 Q700 380 900 430 V560 H0Z" fill="url(#${u}hill)" ${S}/>
+    <path d="M60 470 q10 -10 20 0 M150 500 q10 -10 20 0 M760 480 q10 -10 20 0 M830 510 q10 -10 20 0 M300 520 q10 -10 20 0 M600 525 q10 -10 20 0" stroke="#166534" stroke-width="3" fill="none"/>
+    <path d="M420 560 Q440 500 450 470 Q460 500 480 560Z" fill="#fde68a" opacity=".7"/>
+
+    <!-- base parts (in the order they're earned) -->
+    ${part("floor", `<path d="M220 430 L680 430 L700 452 L200 452Z" fill="url(#${u}stoneTop)" ${S}/><rect x="200" y="452" width="500" height="30" fill="url(#${u}stoneFront)" ${S}/>
+      <path d="M260 452 v30 M340 452 v30 M420 452 v30 M500 452 v30 M580 452 v30 M660 452 v30" stroke="#1e293b" stroke-width="2.5"/>`)}
+    ${part("walls", `<rect x="262" y="276" width="376" height="156" fill="url(#${u}wall)" ${S}/>
+      <path d="M262 316 H638 M262 372 H638" stroke="${h.dark}" stroke-width="3" opacity=".5"/>
+      <path d="M276 288 V420" stroke="#ffffff66" stroke-width="8" stroke-linecap="round"/>
+      ${[284, 616].map((x) => [292, 340, 396].map((y) => `<circle cx="${x}" cy="${y}" r="4" fill="#ffffffaa"/>`).join("")).join("")}`)}
+    ${part("roof", `<path d="M248 280 A202 128 0 0 1 652 280 Z" fill="url(#${u}dome)" ${S}/>
+      <path d="M300 246 A170 100 0 0 1 600 246" fill="none" stroke="#ffffff99" stroke-width="7" stroke-linecap="round"/>
+      <rect x="240" y="272" width="420" height="16" rx="6" fill="url(#${u}gold)" ${S}/>`)}
+    ${part("windows", `${[[288, 300], [550, 300]].map(([x, y]) => `<rect x="${x}" y="${y}" width="62" height="58" rx="10" fill="url(#${u}win)" ${S}/>
+        <path d="M${x + 31} ${y} v58 M${x} ${y + 29} h62" stroke="${INK}" stroke-width="3"/><path d="M${x + 8} ${y + 8} l14 0 l-14 14z" fill="#fff" opacity=".8"/>`).join("")}
+      <circle cx="450" cy="224" r="26" fill="url(#${u}win)" ${S}/><path d="M436 214 l10 -6" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`)}
+    ${part("door", `<path d="M402 432 V352 A48 48 0 0 1 498 352 V432Z" fill="${h.dark}" ${S}/>
+      <path d="M414 432 V356 A36 36 0 0 1 486 356 V432" fill="none" stroke="#ffffff33" stroke-width="5"/>
+      <g transform="translate(450 372) scale(1.3)">${emblemIcon(h, 0, 0)}</g>
+      <rect x="390" y="432" width="120" height="10" fill="url(#${u}gold)" ${S}/>`)}
+    ${part("flag", `<rect x="447" y="70" width="7" height="90" fill="url(#${u}gold)" stroke="${INK}" stroke-width="3"/><circle cx="450" cy="66" r="8" fill="#fde047" ${S}/>
+      <path d="M454 78 Q490 66 520 82 Q550 98 580 84 L580 132 Q550 146 520 130 Q490 114 454 126Z" fill="${h.suit}" ${S} class="wave"/>
+      <g transform="translate(512 104) scale(.9)">${emblemIcon(h, 0, 0)}</g>`)}
+    ${part("tower", `<rect x="140" y="230" width="66" height="222" fill="url(#${u}metal)" ${S}/>
+      <path d="M140 270 L206 300 M140 330 L206 360 M140 390 L206 420" stroke="${h.suit}" stroke-width="8"/>
+      <rect x="126" y="186" width="94" height="48" rx="8" fill="#bae6fd" ${S}/><path d="M138 196 l16 0 l-16 16z" fill="#fff"/>
+      <path d="M120 188 L173 140 L226 188Z" fill="${h.suit}" ${S}/>`)}
+    ${part("antenna", `<g transform="translate(590 222)"><path d="M0 34 L-10 60 H10Z" fill="#475569" ${S}/>
+      <path d="M-34 6 A40 30 -25 0 0 34 -24 Z" fill="url(#${u}metal)" ${S}/><path d="M0 -8 L20 -36" stroke="${INK}" stroke-width="4"/><circle cx="22" cy="-38" r="6" fill="#ef4444" ${S}/>
+      <g class="signal" fill="none" stroke="#fde047" stroke-width="4" stroke-linecap="round"><path d="M36 -50 q12 12 0 24"/><path d="M48 -62 q22 24 0 48"/></g></g>`)}
+    ${part("garden", `${[[180, 470, "#16a34a"], [236, 478, "#22c55e"], [660, 478, "#22c55e"], [716, 470, "#16a34a"]].map(([x, y, c]) => `<ellipse cx="${x}" cy="${y}" rx="38" ry="26" fill="${c}" ${S}/><ellipse cx="${x - 10}" cy="${y - 8}" rx="12" ry="7" fill="#ffffff44"/>`).join("")}
+      ${[[170, 462, "#f472b6"], [196, 474, "#facc15"], [246, 468, "#ef4444"], [672, 470, "#a855f7"], [706, 462, "#facc15"], [728, 476, "#f472b6"]].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="8" fill="${c}" stroke="${INK}" stroke-width="2.5"/><circle cx="${x}" cy="${y}" r="3" fill="#fef9c3"/>`).join("")}`)}
+    ${part("lamp", `${[245, 655].map((x) => `<circle cx="${x}" cy="380" r="46" fill="url(#${u}glow)"/><rect x="${x - 5}" y="384" width="10" height="100" fill="#334155" ${S}/>
+        <path d="M${x - 16} 384 h32 l-6 -22 h-20z" fill="#1e293b" ${S}/><circle cx="${x}" cy="372" r="10" fill="#fef08a" ${S}/>`).join("")}`)}
+    ${part("pad", `<ellipse cx="790" cy="508" rx="96" ry="28" fill="#334155" ${S}/><ellipse cx="790" cy="504" rx="70" ry="18" fill="none" stroke="#fde047" stroke-width="4" stroke-dasharray="10 8"/>
+      <text x="790" y="514" text-anchor="middle" font-family="Arial" font-weight="900" font-size="26" fill="#fde047" stroke="${INK}" stroke-width="1.5">H</text>
+      ${[712, 868].map((x) => `<circle cx="${x}" cy="508" r="6" fill="#ef4444" stroke="${INK}" stroke-width="2" class="twinkle"/>`).join("")}`)}
+    ${part("rocket", `<g transform="translate(790 300)">
+      <ellipse cx="0" cy="196" rx="34" ry="10" fill="#0004"/>
+      <path d="M-16 150 Q0 214 16 150Z" fill="url(#${u}flame)" class="flame"/>
+      <path d="M0 0 C34 30 40 100 30 150 H-30 C-40 100 -34 30 0 0Z" fill="url(#${u}metal)" ${S}/>
+      <path d="M0 0 C14 12 22 26 26 40 H-26 C-22 26 -14 12 0 0Z" fill="${h.suit}" ${S}/>
+      <circle cx="0" cy="76" r="15" fill="#38bdf8" ${S}/><path d="M-6 70 l6 -4" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M-30 110 L-54 160 L-30 150Z M30 110 L54 160 L30 150Z" fill="${h.suit}" ${S}/></g>`)}
+
+    <!-- the hero in front of the door -->
+    <g transform="translate(372 352)">${heroSVG(hero, 150, powers).replace('class="hero-svg', 'class="hero-svg base-hero-svg')}</g>
   </svg>`;
 }
 

@@ -716,11 +716,11 @@ ZONE_CHALLENGES.fortress = [findLetter, soundStart, readPick, pictureWord, build
   countThings, arithmetic, makeTotal, syllableClaps, biggerNumber, sequence];
 
 // A mission = 5 challenges, mixing the zone's types.
-function planMission(zoneId) {
+function planMission(zoneId, count = 5) {
   const types = ZONE_CHALLENGES[zoneId];
   const plan = [];
   let bag = [];
-  while (plan.length < 5) {
+  while (plan.length < count) {
     if (!bag.length) bag = shuffle(types);
     plan.push(bag.pop());
   }

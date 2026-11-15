@@ -400,7 +400,9 @@ function tokenHTML() {
       <g class="token-bob">
         <path d="M0 40 L-16 14 H16Z" fill="${INK}"/>
         <circle r="40" fill="#fff" stroke="${INK}" stroke-width="5"/>
-        <g transform="translate(-36 -36)">${heroFaceSVG(hero, 72)}</g>
+        ${typeof team !== "undefined" && team
+          ? `<g transform="translate(-50 -30)">${heroFaceSVG("bar", 60)}</g><g transform="translate(-10 -30)">${heroFaceSVG("yarden", 60)}</g>`
+          : `<g transform="translate(-36 -36)">${heroFaceSVG(hero, 72)}</g>`}
       </g>
     </g>`;
 }
@@ -435,12 +437,21 @@ function worldSVG(player, openAll) {
   <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg world-svg" role="img" aria-label="מפת העיר">
     <defs>
       <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
+      
+      <pattern id="grass" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="#166534" stroke-width="2.2" fill="none" opacity=".45"/></pattern>
+      <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0369a1"/></linearGradient>
+      <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <clipPath id="islandClip"><path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z"/></clipPath>
       <radialGradient id="evilW" cx="810" cy="130" r="360" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2e1065"/><stop offset=".6" stop-color="#581c87" stop-opacity=".7"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>
     </defs>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="#38bdf8"/>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sea)"/>
     ${Array.from({ length: 24 }, (_, i) => `<path d="M${(i * 173) % 1560} ${(i * 97) % 980} q14 -10 28 0 t28 0" stroke="#e0f2fe" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>`).join("")}
     <path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z" fill="#86efac" stroke="${INK}" stroke-width="7"/>
     <path d="M150 170 Q120 80 310 85 Q600 30 900 75 Q1240 50 1420 110 Q1530 170 1500 420 Q1550 690 1460 850 Q1280 950 900 925 Q500 950 240 895 Q90 830 110 600 Q80 340 150 170Z" fill="#bbf7d0" opacity=".6"/>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#grass)" clip-path="url(#islandClip)"/>
+    <path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z" fill="none" stroke="#fde68a" stroke-width="22" opacity=".8" transform="translate(0 6)"/>
+    <path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z" fill="none" stroke="${INK}" stroke-width="7"/>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#evilW)"/>
     ${cloud(160, 70, .9)}${cloud(1450, 60, 1)}${cloud(1500, 960, .8)}
     <path d="${road}" fill="none" stroke="${INK}" stroke-width="44" stroke-linecap="round"/>
@@ -455,6 +466,8 @@ function worldSVG(player, openAll) {
       ${fOpen ? "" : `<text y="0" text-anchor="middle" font-size="70">🔒</text>`}
     </g>
     <g transform="translate(1530 905)"><rect x="-70" y="-26" width="140" height="48" rx="12" fill="#22c55e" ${K}/><text y="8" text-anchor="middle" class="spot-label" fill="#fff">התחלה</text></g>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sunlight)" pointer-events="none"/>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#vignette)" pointer-events="none"/>
     ${tokenHTML()}
   </svg>`;
 }
@@ -464,20 +477,20 @@ const HOOD_SPOTS = [[1320, 790], [950, 815], [580, 740], [300, 480], [720, 290]]
 const HOOD_THEMES = {
   town: { ground: "#86efac", patch: "#4ade80", deco: () => `${house(1150, 330, "#fef3c7", "#f59e0b")}${house(1260, 300, "#fecaca", "#b91c1c")}${house(1370, 340, "#e0f2fe", "#2563eb")}${house(1480, 310, "#ede9fe", "#7c3aed")}${tree(1100, 470)}${tree(1500, 480, .9)}${tree(120, 860)}${tree(220, 920, .8)}${house(860, 520, "#dcfce7", "#15803d")}
       <g font-family="Arial" font-weight="900" font-size="46" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="1180" y="180">א</text><text x="1300" y="150">ב</text><text x="1420" y="190">ג</text><text x="160" y="200">ד</text><text x="300" y="150">ה</text></g>` },
-  harbor: { ground: "#fde68a", patch: "#fcd34d", deco: () => `<path d="M1000 0 H1600 V560 Q1400 600 1200 520 Q1060 470 1000 380Z" fill="#38bdf8" ${K}/>
+  harbor: { ground: "#fde68a", patch: "#fcd34d", tex: "#b45309", deco: () => `<path d="M1000 0 H1600 V560 Q1400 600 1200 520 Q1060 470 1000 380Z" fill="#38bdf8" ${K}/>
       ${Array.from({ length: 10 }, (_, i) => `<path d="M${1060 + (i * 61) % 500} ${60 + (i * 47) % 420} q14 -10 28 0 t28 0" stroke="#e0f2fe" stroke-width="4" fill="none"/>`).join("")}
       <g ${K}><path d="M1240 300 h150 l-24 40 h-102z" fill="#b45309"/><path d="M1310 300 V170 L1390 290Z" fill="#fff"/><rect x="1470" y="80" width="40" height="190" fill="#fff"/><path d="M1470 130 h40 M1470 190 h40" stroke="#ef4444" stroke-width="16"/><rect x="1462" y="54" width="56" height="30" fill="#facc15"/></g>
       <g font-family="Arial" font-weight="900" font-size="40" fill="#fff" stroke="${INK}" stroke-width="3"><text x="1120" y="200">1</text><text x="1180" y="430">2</text><text x="1400" y="440">3</text></g>${tree(140, 880, 1, "#65a30d")}` },
   woods: { ground: "#4ade80", patch: "#15803d", deco: () => `${[[1100, 400], [1180, 320], [1280, 420], [1380, 330], [1480, 430], [1540, 300], [1200, 180], [1350, 160], [1500, 170], [100, 860], [200, 930], [60, 700], [880, 520], [1000, 560]].map(([x, y], i) => tree(x, y, 1 + (i % 3) * .2, i % 2 ? "#166534" : "#15803d")).join("")}
       <g font-size="28"><text x="1040" y="250">🍄</text><text x="960" y="600">🍄</text><text x="250" y="780">🦉</text></g>
       <g fill="#fef08a">${Array.from({ length: 14 }, (_, i) => `<circle cx="${(i * 211) % 1500 + 50}" cy="${(i * 131) % 900 + 50}" r="4" class="twinkle"/>`).join("")}</g>` },
-  downtown: { ground: "#cbd5e1", patch: "#94a3b8", deco: () => `${tower(1100, 520, 80, 300, "#475569")}${tower(1190, 520, 90, 420, "#334155")}${tower(1290, 520, 80, 260, "#64748b")}${tower(1380, 520, 90, 360, "#1e293b")}${tower(1480, 520, 80, 300, "#475569")}
+  downtown: { ground: "#cbd5e1", patch: "#94a3b8", tex: "#475569", deco: () => `${tower(1100, 520, 80, 300, "#475569")}${tower(1190, 520, 90, 420, "#334155")}${tower(1290, 520, 80, 260, "#64748b")}${tower(1380, 520, 90, 360, "#1e293b")}${tower(1480, 520, 80, 300, "#475569")}
       <path d="M0 640 H1600" stroke="#64748b" stroke-width="40"/><path d="M0 640 H1600" stroke="#fff" stroke-width="4" stroke-dasharray="30 30"/>${tree(160, 880)}${tree(860, 560, .8)}` },
-  fun: { ground: "#fbcfe8", patch: "#f9a8d4", deco: () => `<g ${K}><circle cx="1320" cy="260" r="180" fill="none" stroke-width="8"/>${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M1320 260 L${(1320 + 180 * Math.cos(a)).toFixed(0)} ${(260 + 180 * Math.sin(a)).toFixed(0)}" stroke-width="3"/><circle cx="${(1320 + 180 * Math.cos(a)).toFixed(0)}" cy="${(260 + 180 * Math.sin(a)).toFixed(0)}" r="22" fill="${["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"][i % 4]}"/>`; }).join("")}
+  fun: { ground: "#fbcfe8", patch: "#f9a8d4", tex: "#be185d", deco: () => `<g ${K}><circle cx="1320" cy="260" r="180" fill="none" stroke-width="8"/>${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M1320 260 L${(1320 + 180 * Math.cos(a)).toFixed(0)} ${(260 + 180 * Math.sin(a)).toFixed(0)}" stroke-width="3"/><circle cx="${(1320 + 180 * Math.cos(a)).toFixed(0)}" cy="${(260 + 180 * Math.sin(a)).toFixed(0)}" r="22" fill="${["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"][i % 4]}"/>`; }).join("")}
       <path d="M1240 520 L1320 260 L1400 520" fill="none" stroke-width="10"/></g>
       <path d="M40 980 Q200 700 360 900 T700 860" fill="none" stroke="${INK}" stroke-width="10"/><path d="M40 980 Q200 700 360 900 T700 860" fill="none" stroke="#ef4444" stroke-width="5"/>
       <g class="floaty">${[[1050, 120, "#3b82f6"], [1540, 520, "#22c55e"], [120, 200, "#f59e0b"]].map(([x, y, c]) => `<ellipse cx="${x}" cy="${y}" rx="24" ry="30" fill="${c}" ${K}/>`).join("")}</g>` },
-  edge: { ground: "#bae6fd", patch: "#7dd3fc", deco: () => `<rect x="0" y="0" width="1600" height="300" fill="#1e1b4b"/><g fill="#fef9c3">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 1600}" cy="${(i * 53) % 290}" r="${i % 3 ? 2 : 3.5}" class="${i % 4 ? "" : "twinkle"}"/>`).join("")}</g>
+  edge: { ground: "#bae6fd", patch: "#7dd3fc", tex: "#0369a1", deco: () => `<rect x="0" y="0" width="1600" height="300" fill="#1e1b4b"/><g fill="#fef9c3">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 1600}" cy="${(i * 53) % 290}" r="${i % 3 ? 2 : 3.5}" class="${i % 4 ? "" : "twinkle"}"/>`).join("")}</g>
       <circle cx="1420" cy="140" r="60" fill="#fef9c3" ${K}/><g ${K}><circle cx="1150" cy="110" r="36" fill="#f97316"/><ellipse cx="1150" cy="110" rx="62" ry="12" fill="none" stroke="#fde047" stroke-width="5"/></g>
       <path d="M0 640 Q300 600 520 700 T1000 980 H0Z" fill="#0ea5e9" ${K}/><text x="120" y="820" font-size="40">🐠</text><text x="320" y="900" font-size="34">🐙</text>
       <path d="M1100 1000 Q1250 760 1600 800 V1000Z" fill="#f0f9ff" ${K}/>` },
@@ -509,14 +522,22 @@ function hoodSVG(hoodId, player) {
   }).join("");
   return `
   <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg hood-svg" role="img" aria-label="${h.title}">
-    <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern></defs>
+    <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
+      <pattern id="grass" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="#166534" stroke-width="2.2" fill="none" opacity=".45"/></pattern>
+      <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0369a1"/></linearGradient>
+      <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="${t.ground}"/>
+    <pattern id="tex" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="${t.tex || "#166534"}" stroke-width="2.2" fill="none" opacity=".4"/></pattern>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#tex)"/>
     <g fill="${t.patch}" opacity=".7"><ellipse cx="300" cy="200" rx="280" ry="120"/><ellipse cx="900" cy="560" rx="260" ry="90"/><ellipse cx="1300" cy="900" rx="320" ry="100"/></g>
     ${t.deco()}
     <path d="${road}" fill="none" stroke="${INK}" stroke-width="64" stroke-linecap="round"/>
     <path d="${road}" fill="none" stroke="#fcd9a8" stroke-width="54" stroke-linecap="round"/>
     <path d="${road}" id="road" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="22 20"/>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sunlight)" pointer-events="none"/>
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#vignette)" pointer-events="none"/>
     ${places}
     ${tokenHTML()}
   </svg>`;
