@@ -43,6 +43,7 @@ const NUMBER_WORDS = ["אֶפֶס", "אַחַת", "שְׁתַּיִם", "שָׁ�
 function collectPhrases() {
   const ctx = vm.createContext({});
   vm.runInContext(fs.readFileSync(path.join(JS, "data.js"), "utf8"), ctx);
+  vm.runInContext(fs.readFileSync(path.join(JS, "data2.js"), "utf8"), ctx);
   vm.runInContext(fs.readFileSync(path.join(JS, "themes.js"), "utf8"), ctx);
   const get = (expr) => vm.runInContext(expr, ctx);
   const set = new Set();

@@ -1012,3 +1012,62 @@ button, .spot, .region, .maze-cell, .balloon, .fish, .meteor { touch-action: man
 @media (prefers-reduced-motion: reduce) { .wow * { animation: none !important; } }
 
 .glow-abc { direction: ltr; unicode-bidi: bidi-override; }
+
+/* ===================== the 24 newest worlds' games (2026-11-16) ===================== */
+.goal-big { display: inline-block; font-size: 80px; font-weight: 900; background: var(--yellow); border: 5px solid var(--ink); border-radius: 50%; width: 130px; height: 130px; line-height: 120px; box-shadow: 5px 5px 0 var(--ink); }
+.ten-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 10px; }
+.ten-card { min-width: 110px; min-height: 130px; background: #fff; border: 5px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.ten-card b { font-size: 54px; font-weight: 900; line-height: 1; }
+.ten-card.selected { background: #fef08a; transform: translateY(-8px); }
+.ten-card.matched { background: #bbf7d0; }
+.dot-card.mini { max-width: 90px; gap: 4px; }
+.dot-card.mini i { width: 14px; height: 14px; }
+.num-train { display: flex; align-items: flex-end; justify-content: center; gap: 6px; margin: 16px 0; flex-wrap: wrap; }
+.num-train .loco { font-size: 80px; line-height: 1; }
+.wagon { width: 86px; height: 70px; background: linear-gradient(#60a5fa, #2563eb); color: #fff; border: 4px solid var(--ink); border-radius: 10px 10px 4px 4px; font-size: 40px; font-weight: 900; display: flex; align-items: center; justify-content: center; position: relative; text-shadow: 2px 2px 0 #111; }
+.wagon::after { content: ""; position: absolute; bottom: -14px; left: 12px; right: 12px; height: 14px; background: radial-gradient(circle at 10px 7px, #111 6px, transparent 7px), radial-gradient(circle at calc(100% - 10px) 7px, #111 6px, transparent 7px); }
+.wagon.hole { background: #fff; color: var(--z); border-style: dashed; text-shadow: none; }
+.wagon.filled { background: linear-gradient(#86efac, #16a34a); animation: pop .3s; }
+.tower-box { min-height: 320px; display: flex; align-items: flex-end; }
+.tower { display: flex; flex-direction: column-reverse; align-items: center; min-height: calc(var(--h) * 26px); }
+.tower i { width: 80px; height: 24px; background: var(--c); border: 3px solid var(--ink); border-radius: 5px; margin-top: 2px; box-shadow: inset 0 -5px 0 #0002, inset 0 4px 0 #fff6; animation: pop .25s; }
+.towers .option { align-items: flex-end; min-height: 280px; }
+.towers .tower i { width: 64px; height: 22px; }
+.share-pile { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 44px; min-height: 60px; }
+.share-pile i, .small-plate i { font-style: normal; }
+.share-row { display: flex; justify-content: center; gap: 30px; margin-top: 10px; }
+.share-plate { background: #fff; border: 5px solid var(--ink); border-radius: 22px; box-shadow: 5px 5px 0 var(--ink); padding: 10px 16px; display: flex; flex-direction: column; align-items: center; min-width: 220px; }
+.share-plate .friend { font-size: 60px; }
+.small-plate { display: flex; flex-wrap: wrap; justify-content: center; min-height: 60px; min-width: 180px; border-radius: 50%; background: radial-gradient(circle, #fff 55%, #e2e8f0 56%, #fff 70%); border: 4px solid var(--ink); padding: 10px; font-size: 30px; }
+.share-plate b { font-size: 34px; font-weight: 900; }
+.pairs-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.pair { font-size: 54px; background: #fff; border: 4px solid var(--ink); border-radius: 16px; padding: 4px 10px; box-shadow: 3px 3px 0 var(--ink); }
+.measure { display: inline-flex; flex-direction: column; align-items: flex-start; }
+.measure .dino { line-height: .85; max-width: calc(var(--n) * 62px); overflow: visible; }
+.ruler { display: flex; }
+.ruler i { width: 58px; height: 34px; background: var(--c); border: 3px solid var(--ink); margin-left: 2px; border-radius: 4px; }
+.syl-slots .slot.syl { width: 110px; font-size: 48px; }
+.syl-tile { width: auto; min-width: 100px; padding: 0 14px; font-size: 48px; }
+.small-word { font-size: 34px; }
+.mem-back.gem { background: repeating-linear-gradient(45deg, #6d28d9 0 14px, #8b5cf6 14px 28px); }
+.mem-back.en-back { background: repeating-linear-gradient(45deg, #db2777 0 14px, #f472b6 14px 28px); font-family: Arial, sans-serif; font-weight: 900; color: #fff; font-size: 40px; -webkit-text-stroke: 1.5px #111; }
+.opp-q { display: inline-flex; align-items: center; gap: 14px; background: #fff; border: 5px solid var(--ink); border-radius: 20px; padding: 8px 20px; box-shadow: 5px 5px 0 var(--ink); }
+.opp-q b { font-size: 40px; font-weight: 900; }
+.opp-arrow { font-size: 40px; }
+.opp-q .blank-box { width: 80px; height: 80px; border: 4px dashed var(--z); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 900; color: var(--z); }
+.story-slots { display: flex; justify-content: center; gap: 14px; margin: 12px 0 18px; }
+.story-slot { width: 140px; min-height: 150px; border: 4px dashed #94a3b8; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 6px; background: #fff; }
+.story-slot small { font-weight: 900; font-size: 18px; }
+.story-slot.filled { border: 5px solid var(--ink); background: #bbf7d0; box-shadow: 4px 4px 0 var(--ink); }
+.story-card { width: 130px; height: 130px; background: #fff; border: 5px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); }
+.story-card.used { visibility: hidden; }
+.sentence { display: inline-block; font-size: 40px; font-weight: 900; background: #fff; border: 5px solid var(--ink); border-radius: 18px; padding: 10px 24px; box-shadow: 5px 5px 0 var(--ink); margin-bottom: 10px; }
+.yesno .option { min-width: 190px; }
+.yn { display: flex; flex-direction: column; align-items: center; font-size: 70px; line-height: 1.1; }
+.yn b { font-family: Arial, sans-serif; font-size: 34px; }
+.sizes-opts .option { min-width: 170px; min-height: 170px; }
+.balloon-text.emoji-label { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-size: 40px; stroke: none; }
+.fish-label.emoji-label { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-size: 34px; -webkit-text-stroke: 0; }
+
+.measure .dino { font-size: 100px; display: inline-block; transform: scaleX(var(--sx)); transform-origin: left center; max-width: none; line-height: 1; margin-bottom: 4px; }
+.en-ear b { direction: ltr; unicode-bidi: isolate; }

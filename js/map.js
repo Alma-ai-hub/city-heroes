@@ -579,7 +579,7 @@ function citySVG(player, openAll) {
 
 // ===================== A kingdom: its neighborhoods and its ruler's castle =====================
 const RULER_AT = [800, 250];
-const realmHoodSpots = (n) => (n === 2 ? [[1150, 720], [460, 720]] : [[1260, 690], [800, 790], [340, 690]]);
+const realmHoodSpots = (n) => (n === 2 ? [[1150, 720], [460, 720]] : n === 3 ? [[1260, 690], [800, 790], [340, 690]] : [[1300, 620], [960, 800], [630, 800], [290, 620]]);
 
 function rulerCastleArt(realm) {
   const z = ZONES.find((x) => x.id === realm.ruler);
@@ -603,8 +603,12 @@ const HOOD_LANDMARKS = {
   bay: [["🌊", 0, -30, 100], ["🐠", -130, -10, 62], ["📮", 130, -20, 62], ["🚂", 60, 30, 50]],
   entown: [["🍎", -60, -40, 90], ["🐶", 70, -40, 86], ["🎨", -140, 10, 54], ["👋", 140, 0, 50]],
   enpark: [["🔤", -40, -40, 92], ["🔟", 80, -40, 76], ["🧸", -140, 10, 58], ["🎈", 140, -90, 50]],
+  toys: [["🎁", 0, -40, 100], ["🧱", -130, 0, 60], ["🦕", 130, -10, 66], ["🚃", 60, 30, 44]],
+  stories: [["📕", 0, -40, 100], ["🎭", -130, 0, 62], ["🔄", 130, -10, 56], ["🛝", 60, 30, 46]],
+  beach: [["🏖️", 0, -40, 100], ["🐙", -130, 0, 60], ["🌦️", 130, -20, 60], ["🚗", 60, 30, 44]],
+  rainbow: [["🌈", 0, -40, 100], ["🐞", -130, 0, 56], ["😀", 130, -10, 56], ["👍", 60, 30, 44]],
 };
-const landmarks = (hid) => (HOOD_LANDMARKS[hid] || []).map(([e, x, y, s], i) => emo(e, x, y, s, i === 0 ? "" : i % 2 ? "bob" : "")).join("");
+const landmarks = (hid) => `<g transform="scale(${realmOfHood(hid).hoods.length > 3 ? 0.8 : 1})">${(HOOD_LANDMARKS[hid] || []).map(([e, x, y, s], i) => emo(e, x, y, s, i === 0 ? "" : i % 2 ? "bob" : "")).join("")}</g>`;
 
 const REALM_LOOK = {
   math: {
@@ -638,7 +642,7 @@ function realmSVG(realmId, player, openAll) {
     const h = NEIGHBORHOODS.find((x) => x.id === hid);
     const played = h.zones.filter((z) => player.zones[z]).length;
     return districtHTML({ id: hid, kind: "hood", x: spots[i][0], y: spots[i][1], title: `${h.icon} ${h.title}`, color: h.color, art: landmarks(hid),
-      open: hoodOpen(player, hid, openAll), count: `⭐ ${played}/${h.zones.length}`, rx: 210, ry: 100 });
+      open: hoodOpen(player, hid, openAll), count: `⭐ ${played}/${h.zones.length}`, rx: realm.hoods.length > 3 ? 165 : 210, ry: realm.hoods.length > 3 ? 82 : 100 });
   }).join("");
   const rz = ZONES.find((x) => x.id === realm.ruler);
   const ruler = districtHTML({ id: realm.ruler, kind: "ruler", x: RULER_AT[0], y: RULER_AT[1], title: `👑 ${rz.title}`, color: rz.color,
@@ -834,3 +838,27 @@ Object.assign(PLACE_ART, {
     </g>
     <text x="70" y="40" font-size="40">🧸</text><text x="-130" y="-50" font-size="30" class="floaty">✋</text><text x="40" y="-100" font-size="28" class="floaty">👃</text>`,
 });
+
+// ---------- the newest neighborhoods' screens ----------
+Object.assign(HOOD_THEMES, {
+  toys: { ground: "#fed7aa", patch: "#fdba74", tex: "#c2410c", deco: () => `${emo("🎁", 1180, 220, 90)}${emo("🧸", 1330, 300, 80)}${emo("🪀", 1460, 200, 60)}${emo("🧱", 1100, 420, 70)}${emo("🚂", 1420, 470, 70)}${emo("🎈", 160, 160, 60, "bob")}${emo("🦕", 1500, 640, 80)}${emo("🎲", 200, 880, 60)}` },
+  stories: { ground: "#fef3c7", patch: "#fde68a", tex: "#a16207", deco: () => `${emo("📚", 1180, 220, 90)}${emo("🏰", 1350, 280, 100)}${emo("🦉", 1480, 190, 60, "bob")}${emo("📖", 1120, 430, 70)}${emo("🌳", 1450, 460, 90)}${emo("🎭", 180, 170, 60)}${emo("🌳", 160, 860, 80)}${emo("✨", 300, 150, 40, "bob")}` },
+  beach: { ground: "#fde68a", patch: "#fcd34d", tex: "#b45309", deco: () => `<path d="M1000 0 H1600 V560 Q1400 600 1200 520 Q1060 470 1000 380Z" fill="#38bdf8" ${K}/>${emo("🏖️", 1180, 240, 90)}${emo("🐙", 1350, 300, 70, "bob")}${emo("⛵", 1460, 150, 70)}${emo("🐬", 1300, 440, 60, "bob")}${emo("🌴", 160, 860, 90)}${emo("🦀", 300, 920, 50)}${emo("☀️", 200, 160, 80)}` },
+  garden: { ground: "#bbf7d0", patch: "#86efac", deco: () => `${emo("🌈", 1300, 200, 140)}${emo("🌷", 1120, 420, 60)}${emo("🌻", 1460, 440, 70)}${emo("🦋", 1180, 330, 50, "bob")}${emo("🐞", 1420, 340, 44)}${emo("🌸", 160, 860, 60)}${emo("🐝", 260, 160, 44, "bob")}${emo("🍄", 320, 900, 50)}` },
+});
+
+// The newest places are drawn as big pictures on a little round stage.
+const PLACE_PICS = {
+  toyshop: ["🧸", "🪀", "🪙"], numtrain: ["🚃", "🔢", "🚂"], blocks: ["🧱", "🏗️", "🔢"], veggarden: ["🥕", "🥒", "🧺"], dinomuseum: ["🦕", "🦖", "📏"],
+  theater: ["🎭", "🎤", "🎟️"], opposites: ["🔄", "☀️", "🌙"], storylib: ["📕", "📖", "🐣"], playground: ["🛝", "🏃", "⚽"], wordcave: ["💎", "🔤", "🔦"],
+  enfamily: ["👪", "👵", "👶"], enhome: ["🏠", "🛏️", "🪑"], enshapes: ["🔷", "🔺", "⭐"], entoys: ["🪁", "🧸", "🧩"],
+  ensea: ["🐙", "🐋", "🦀"], enweather: ["🌦️", "🌈", "❄️"], enfruits: ["🍍", "🍒", "🍋"], envehicles: ["🚗", "🚌", "🚲"], enclothes: ["👕", "👗", "🧦"],
+  enbugs: ["🐞", "🦋", "🐝"], enfeelings: ["😀", "😢", "😴"], ensizes: ["🐘", "🐭", "📏"], enyesno: ["👍", "👎", "❓"], encolorshape: ["🔺", "🟦", "🟡"],
+};
+for (const [id, [a, b, c]] of Object.entries(PLACE_PICS)) {
+  const z = ZONES.find((x) => x.id === id);
+  PLACE_ART[id] = () => `
+    <ellipse cx="0" cy="34" rx="120" ry="34" fill="${shade(z.color, -0.3)}" ${K}/>
+    <ellipse cx="0" cy="26" rx="120" ry="34" fill="${shade(z.color, 0.35)}" ${K}/>
+    ${emo(a, 0, -40, 120)}${emo(b, -100, 10, 58, "bob")}${emo(c, 100, 4, 54)}`;
+}
