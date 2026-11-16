@@ -95,6 +95,7 @@ function showHome() {
         ${villainSVG(5, 0, 130)}
       </div>
       <div id="voice-warning"></div>
+      <button class="parents-link story-link" data-story>📖 הסיפור</button>
       <button class="parents-link" data-parents>👨‍👩‍👦 פינת ההורים</button>
     </section>`;
   app.querySelectorAll("[data-hero]").forEach((b) => b.addEventListener("click", () => {
@@ -104,6 +105,7 @@ function showHome() {
     showMap(true);
   }));
   on("[data-parents]", "click", showParents);
+  on("[data-story]", "click", () => showStory(showHome));
   on("[data-add-hero]", "click", () => { Sfx.click(); showHeroMaker(); });
   on("[data-team]", "click", () => { Sfx.click(); showTeamPick(); });
   setTimeout(() => {
@@ -169,6 +171,7 @@ function topBar() {
       ${logoHTML(true)}
       <div class="stars">${team ? TEAM.map((id) => `${HEROES[id].name} ⭐${state.players[id].stars}`).join(" · ") : `⭐ ${me().stars}`}</div>
       <button class="base-btn map-btn" data-map-top title="מפת העיר">🗺️</button>
+      ${team ? "" : `<button class="base-btn map-btn" data-album title="אלבום המדבקות">📒</button>`}
       <button class="base-btn" data-base>🏰 ${team ? "הבסיסים" : "הבסיס שלי"}</button>
     </header>`;
 }
@@ -214,9 +217,11 @@ function wireMap(svg, pts, here, selector, attr, onArrive, lockedSay) {
 
 // ---------- the city: three kingdoms and the fortress ----------
 function showMap(greet) {
+  if (greet && !state.settings.storySeen) return showStory(() => showMap(true));
   clearScreen();
   app.innerHTML = mapScreen({
     caption: "בחר ממלכה: מספרים, אותיות או אנגלית. נצחו את שלושת השליטים, ואז אפשר להגיע לד״ר בלגן!",
+    head: tauntHTML(),
     svg: citySVG(mp(), openAll()),
   });
   bindTop();
@@ -229,6 +234,7 @@ function showMap(greet) {
     else showRealm(id, true);
   }, () => ["הַמִּבְצָר עוֹד נָעוּל. כְּדֵי לִפְתֹּחַ אוֹתוֹ, צָרִיךְ לְנַצֵּחַ אֶת שְׁלוֹשֶׁת הַשַּׁלִּיטִים"]);
   if (greet) Voice.say([...(team ? ["שָׁלוֹם", ...teamSpoken(), "הַיּוֹם אַתֶּם מְשַׂחֲקִים בְּיַחַד."] : ["שָׁלוֹם", H().spokenTitle]), "דּוֹקְטוֹר בַּלָּגָן מְבַלְגֵּן אֶת הָעִיר. לְאָן רָצִים?"]);
+  if (greet) setTimeout(maybeDailyChest, 2500);
 }
 
 // ---------- a kingdom: its neighborhoods and its ruler ----------
@@ -309,6 +315,7 @@ function bindTop() {
   on("[data-home]", "click", showHome);
   on("[data-base]", "click", () => showBase());
   on("[data-map-top]", "click", () => showMap(false));
+  on("[data-album]", "click", () => showAlbum("math"));
 }
 
 // ---------- Screen 3: a mission ----------
@@ -348,12 +355,13 @@ function startMission(zoneId) {
         <div class="vs-mid">${burstSVG("נגד")}</div>
         <div class="vs-side foe">${foe}</div>
       </div>
+      <div class="helper-line">${(() => { const hp = helperFor(zone.id); return `<span class="helper-face" style="--c:${hp.color}">${hp.e}</span><span class="helper-bubble"><b>${hp.name}:</b> אני אעזור לך! אם קשה, לחץ על 💡 ואני אתן רמז.</span>`; })()}</div>
       <p class="story caption-box">${zone.storyText}${team ? `<br><b>${6 % TEAM.length ? "כל אחד בתורו, לפי הסדר." : `כל אחד בתורו: ${6 / TEAM.length} אתגרים לכל גיבור.`}</b>` : ""}</p>
       <button class="go-btn" data-go>🦸 יאללה, למשימה!</button>
       <button class="soft-btn" data-back>חזרה למפה</button>
     </section>`;
   bindTop();
-  Voice.say(team ? [zone.story, "כׇּל אֶחָד בְּתוֹרוֹ"] : zone.story);
+  Voice.say(team ? [zone.story, "כׇּל אֶחָד בְּתוֹרוֹ"] : [zone.story, helperFor(zone.id).spoken, "יַעֲזֹר לְךָ"]);
   on("[data-go]", "click", () => { Sfx.click(); showChallenge(); });
   on("[data-back]", "click", backToMap);
 }
@@ -364,8 +372,10 @@ function showChallenge() {
   hero = turnHero(mission.i);
   app.innerHTML = `
     <section class="mission" style="--z:${zone.color}">
+      ${sceneHTML(zone)}
       <div class="mission-top">
         <button class="icon-btn" data-quit title="יציאה מהמשימה">✖</button>
+        <button class="hint-btn" data-hint title="רמז">${helperFor(zone.id).e} 💡 רמז</button>
         <div class="zone-tag">${zone.icon} ${zone.title}</div>
         ${team ? `<div class="turn-tag" style="--c:${H().suit}">${heroFaceSVG(hero, 46)}<b>התור של ${H().name}!</b></div>` : ""}
         <div class="progress">${mission.plan.map((_, i) => `<span class="${i < mission.i ? "done" : i === mission.i ? "now" : ""}" ${team ? `style="--p:${HEROES[turnHero(i)].suit}"` : ""}>${i < mission.i ? "★" : ""}</span>`).join("")}</div>
@@ -373,10 +383,20 @@ function showChallenge() {
       <div class="mission-body">
         ${zone.boss ? `<div class="boss-side" id="boss">${bossHTML(zone, mission.hp)}</div>` : ""}
         <div class="challenge comic-panel" id="challenge"></div>
+        <div class="hero-side" id="heroSide">${heroSVG(hero, 150, me().powers)}<div class="hero-pet">${petHTML(hero, 70)}</div><span class="think-bubble">🤔</span></div>
       </div>
       <div class="feedback" id="feedback"></div>
     </section>`;
   on("[data-quit]", "click", () => { if (team) hero = mission.solo; backToMap(); });
+  on("[data-hint]", "click", () => {
+    const el = document.getElementById("challenge");
+    const hp = helperFor(zone.id);
+    const right = el.dataset.answer && el.querySelector(`.option[data-v="${CSS.escape(el.dataset.answer)}"]:not(:disabled)`);
+    mission.mistakes[hero] = (mission.mistakes[hero] || 0) + 1;
+    Sfx.click();
+    if (right) { right.classList.add("hint"); Voice.say([hp.spoken, "אוֹמֵר: נַסֵּה אֶת זֶה שֶׁמַּבְהִיק!"]); }
+    else { el.querySelector(".hint, .speak-btn")?.classList.add("hint"); el.querySelector("[data-speak]")?.click(); }
+  });
   runChallenge();
 }
 
@@ -393,12 +413,14 @@ function runChallenge() {
     mistake: (opts = {}) => {
       mission.mistakes[hero] = (mission.mistakes[hero] || 0) + 1;
       Sfx.oops();
+      heroReact("think");
       if (!opts.quiet) Voice.say(pick(TRY_AGAIN));
     },
     correct: (teach) => {
       if (finished) return;
       finished = true;
       Sfx.good();
+      heroReact("cheer");
       const last = mission.i === mission.plan.length - 1;
       const word = pick(BURSTS);
       const praise = team || Math.random() < 0.3 ? [pick(PRAISE), H().spokenName] : [word];
@@ -438,6 +460,8 @@ function hitBoss() {
 // ---------- Screen 4: mission done, reward (for each kid who played) ----------
 function giveReward(id) {
   const p = state.players[id];
+  const petBefore = petStage(p.done || 0);
+  const newSticker = !p.zones[mission.zone.id] && !mission.zone.ruler && mission.zone.id !== "fortress";
   if (mission.zone.id === "fortress") p.saved = (p.saved || 0) + 1;
   const m = mission.mistakes[id] || 0;
   const stars = m <= 1 ? 3 : m <= 4 ? 2 : 1;
@@ -448,7 +472,7 @@ function giveReward(id) {
   if (reward.kind === "part") p.parts.push(reward.id);
   else if (reward.kind === "power") p.powers.push(reward.id);
   else p.medals++;
-  return { id, stars, reward };
+  return { id, stars, reward, newSticker, petGrew: petStage(p.done) > petBefore };
 }
 
 function finishMission() {
@@ -479,6 +503,7 @@ function finishMission() {
                 <p class="reward-name">${r.reward.name}</p>
               </div>
             </div>
+            <div class="bonus-row">${r.newSticker ? `<span class="bonus">📒 מדבקה חדשה לאלבום: <b>${stickerOf(mission.zone.id)}</b></span>` : ""}${r.petGrew ? `<span class="bonus">${petHTML(r.id, 50)} ${petInfo(r.id).name} גדל!</span>` : ""}</div>
           </div>`).join("")}
       </div>
       <div class="row-btns">
@@ -515,6 +540,7 @@ function showBase(whose) {
       ${team ? `<div class="base-tabs">${TEAM.map((id) => `<button class="base-tab ${id === hero ? "on" : ""}" data-whose="${id}" style="--c:${HEROES[id].suit}">${heroFaceSVG(id, 40)} הבסיס של ${HEROES[id].name}</button>`).join("")}</div>` : ""}
       <h2 class="comic-title">הבסיס של ${H().name}</h2>
       <div class="base-pic big">${baseSVG(p.parts, hero, p.powers)}</div>
+      <div class="pet-card">${petHTML(hero, 110)}<div><b>${petInfo(hero).name}</b> · ${petInfo(hero).stageName}<br><small>${petInfo(hero).left ? `עוד ${petInfo(hero).left} משימות והוא יגדל!` : "הכי גדול שיש! 👑"}</small></div></div>
       <div class="collection">
         <h3>חלקי הבסיס (${p.parts.length}/${BASE_PARTS.length})</h3>
         <div class="items">${BASE_PARTS.map((x) => partFor(hero, x.id)).map((b) => `<span class="item ${p.parts.includes(b.id) ? "" : "locked"}" title="${b.name}">${p.parts.includes(b.id) ? b.icon : "❔"}<small>${p.parts.includes(b.id) ? b.name : ""}</small></span>`).join("")}</div>

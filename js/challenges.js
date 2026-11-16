@@ -63,6 +63,7 @@ function choiceQuestion(el, api, { text, speech, visual = "", options, answer, o
       ${options.map((o) => `<button class="option" data-v="${o.value}">${o.html}</button>`).join("")}
     </div>`;
   wireSpeak(el, api, speech);
+  el.dataset.answer = String(answer); // for the helper's hint
   let wrong = 0;
   let done = false;
   el.querySelectorAll(".option").forEach((btn) => {
