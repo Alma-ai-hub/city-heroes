@@ -899,3 +899,73 @@ button, .spot, .region, .maze-cell, .balloon, .fish, .meteor { touch-action: man
 .vs-side.duo.n3 { width: 330px; }
 .vs-side.duo.n3 .hero-svg + .hero-svg { margin-inline-start: -40px; }
 .gift-card { min-width: 250px; }
+
+/* ===================== English, rulers, final battle, victory (2026-11-16) ===================== */
+.en-ear { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; background: linear-gradient(180deg, #fdf2f8, #fbcfe8); border: 5px solid var(--ink); border-radius: 24px; box-shadow: 5px 5px 0 var(--ink); padding: 10px 26px; font-size: 54px; }
+.en-ear b { font-family: Arial, sans-serif; font-size: 34px; direction: ltr; }
+.en-ear small { font-size: 16px; font-weight: 800; }
+.en-letter { font-family: Arial, sans-serif; }
+.en-count .count-item { background: #fff; border: 4px solid var(--ink); border-radius: 16px; box-shadow: 3px 3px 0 var(--ink); font-size: 50px; padding: 4px 8px; display: flex; flex-direction: column; align-items: center; min-width: 76px; }
+.en-count .count-item small { font-family: Arial, sans-serif; font-size: 18px; font-weight: 900; min-height: 22px; color: #be185d; }
+.en-count .count-item.counted { background: #fce7f3; }
+
+.showdown { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.machine-box { width: min(380px, 80vw); animation: hover 2.4s ease-in-out infinite; }
+.machine-box.hit { animation: zap .6s; }
+.machine-svg { width: 100%; display: block; }
+.machine-svg.broken { transform: rotate(-12deg); filter: grayscale(.6); }
+@keyframes hover { 50% { transform: translateY(-10px); } }
+.hp-row { display: flex; gap: 8px; }
+.hp-dot { width: 26px; height: 26px; border-radius: 50%; background: #cbd5e1; border: 4px solid var(--ink); }
+.hp-dot.on { background: #ef4444; }
+.beam { position: absolute; left: 50%; bottom: 120px; width: 18px; height: 0; margin-left: -9px; background: linear-gradient(var(--b), #fff); border-radius: 9px; box-shadow: 0 0 20px var(--b), 0 0 40px #fff; opacity: 0; pointer-events: none; }
+.beam.shoot { animation: shoot .6s ease-out; }
+@keyframes shoot { 0% { height: 0; opacity: 1; } 60% { height: 320px; opacity: 1; } 100% { height: 320px; opacity: 0; } }
+.showdown-text { font-size: 48px; font-weight: 900; }
+.showdown-hero { margin-top: 6px; }
+
+.victory { margin-top: 16px; padding: 22px; text-align: center; overflow: hidden; }
+.victory-title { font-size: 76px; }
+.victory-row { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.victory-heroes { display: flex; }
+.victory-heroes .hero-svg + .hero-svg { margin-inline-start: -30px; }
+.medal-svg { width: 190px; filter: drop-shadow(6px 8px 0 #0004); animation: medal 2s ease-in-out infinite; }
+@keyframes medal { 50% { transform: rotate(6deg) scale(1.05); } }
+.victory-villain { display: flex; flex-direction: column; align-items: center; }
+.victory-villain .villain-bubble { margin: 0; order: -1; }
+.fireworks { position: absolute; inset: 0; pointer-events: none; }
+.fireworks i { position: absolute; left: var(--x); top: var(--y); width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 -40px 0 var(--c), 0 40px 0 var(--c), 40px 0 0 var(--c), -40px 0 0 var(--c), 28px 28px 0 var(--c), -28px -28px 0 var(--c), 28px -28px 0 var(--c), -28px 28px 0 var(--c); animation: firework 1.6s ease-out infinite; animation-delay: var(--d); opacity: 0; }
+@keyframes firework { 0% { transform: scale(.1); opacity: 1; } 80% { opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+.certificate { max-width: 680px; margin: 18px auto; background: #fffbeb; border: 10px double #a16207; border-radius: 14px; padding: 18px 26px; font-size: 22px; line-height: 1.6; box-shadow: 6px 6px 0 var(--ink); }
+.cert-title { font-family: var(--display); font-size: 58px; color: #a16207; line-height: 1; }
+.cert-faces { display: flex; justify-content: center; gap: 8px; }
+.cert-date { font-size: 16px; color: #78350f; }
+@media print {
+  body { background: #fff !important; }
+  body * { visibility: hidden; }
+  .certificate, .certificate * { visibility: visible; }
+  .certificate { position: absolute; top: 20px; left: 20px; right: 20px; box-shadow: none; }
+}
+
+/* ===================== new heroes (2026-11-16) ===================== */
+.hero-pick.many .hero-card { width: 210px; padding: 12px 10px; }
+.hero-pick.many .hero-name { font-size: 52px; }
+.hero-pick.many .hero-title { font-size: 17px; }
+.hero-card.add-hero { background: repeating-linear-gradient(45deg, #ffffff22 0 14px, #ffffff11 14px 28px); border-style: dashed; color: #fff; justify-content: center; min-height: 300px; width: 200px; box-shadow: none; transform: none; }
+.hero-pick.many .hero-card.add-hero { min-height: 250px; }
+.add-hero .plus { font-size: 80px; }
+.add-hero .hero-title { background: #fff; color: var(--ink); }
+.maker { margin-top: 16px; padding: 22px; }
+.maker .comic-title { text-align: center; }
+.maker-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; justify-content: center; }
+.maker-form { flex: 1; min-width: 300px; max-width: 620px; }
+.maker-label { display: block; font-size: 22px; font-weight: 900; margin: 14px 0 6px; }
+.maker-name { display: block; width: 100%; margin-top: 6px; font: inherit; font-size: 30px; font-weight: 800; padding: 8px 14px; border: 4px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); }
+.maker-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: 20px; font-weight: 800; padding: 8px 14px; border: 4px solid var(--ink); border-radius: 999px; background: #fff; box-shadow: 3px 3px 0 var(--ink); }
+.chip.on { background: var(--yellow); transform: scale(1.06); }
+.swatch-sm { width: 48px; height: 48px; border-radius: 50%; background: var(--s); border: 4px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.swatch-sm.on { box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--ink); transform: scale(1.1); }
+.maker-preview { text-align: center; background: radial-gradient(circle, #fff, #e0e7ff); border: 5px solid var(--ink); border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); padding: 14px 24px; }
+.maker-title { font-family: var(--display); font-size: 40px; margin: 6px 0 0; }
+.custom-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 20px; }

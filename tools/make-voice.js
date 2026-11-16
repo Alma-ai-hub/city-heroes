@@ -43,6 +43,7 @@ const NUMBER_WORDS = ["אֶפֶס", "אַחַת", "שְׁתַּיִם", "שָׁ�
 function collectPhrases() {
   const ctx = vm.createContext({});
   vm.runInContext(fs.readFileSync(path.join(JS, "data.js"), "utf8"), ctx);
+  vm.runInContext(fs.readFileSync(path.join(JS, "themes.js"), "utf8"), ctx);
   const get = (expr) => vm.runInContext(expr, ctx);
   const set = new Set();
   const add = (s) => { if (s !== undefined && s !== null && KEY(s)) set.add(KEY(s)); };
@@ -57,6 +58,12 @@ function collectPhrases() {
   get("POWERS").forEach((p) => add(p.name));
   ["PRAISE", "BURSTS", "TRY_AGAIN"].forEach((k) => get(k).forEach(add));
   for (let n = 0; n <= 20; n++) add(String(n));
+  // English words (said with { en: ... } in the game; stored as "en:word")
+  get("EN_WORDS").forEach((w) => { add("en:" + w.en); if (w.says) add("en:" + w.says); });
+  get("EN_COLORS").forEach((c) => add("en:" + c.en));
+  get("EN_NUMBERS").forEach((n) => add("en:" + n));
+  get("EN_LETTERS").forEach((l) => add("en:" + l));
+  get("REALMS").forEach((r) => add(r.spoken));
   add("מדליית גיבור");
 
   // Every quoted sentence with vowel marks in the game's code.
@@ -68,7 +75,7 @@ function collectPhrases() {
 }
 
 // What is actually sent to the voice (numbers become words).
-const spokenText = (key) => (/^\d+$/.test(key) ? NUMBER_WORDS[+key] || key : key);
+const spokenText = (key) => (key.startsWith("en:") ? key.slice(3) : /^\d+$/.test(key) ? NUMBER_WORDS[+key] || key : key);
 const fileFor = (key) => crypto.createHash("sha1").update(key).digest("hex").slice(0, 12) + ".mp3";
 
 // ---------- ElevenLabs ----------

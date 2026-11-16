@@ -356,12 +356,11 @@ Object.assign(PLACE_ART, {
     <g class="floaty">${[[-100, -100], [70, -120], [110, -50]].map(([x, y]) => `<path d="M${x} ${y} l-30 -30" stroke="#fb923c" stroke-width="8" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="14" fill="#a8a29e" ${K}/>`).join("")}</g>`,
 });
 
-// ===================== The big city map (6 neighborhoods) =====================
+// ===================== The city map: three kingdoms + Dr. Balagan's fortress =====================
 const WORLD_W = 1600, WORLD_H = 1000;
-const HOOD_AT = {
-  town: [1250, 770], harbor: [810, 800], woods: [360, 700], downtown: [360, 330], fun: [810, 450], edge: [1250, 340],
-};
-const FORTRESS_SPOT = [810, 140];
+const REALM_AT = { lang: [1230, 640], en: [810, 800], math: [390, 640] };
+const FORTRESS_SPOT = [810, 170];
+const ISLAND = "M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z";
 
 function hoodArt(id) {
   const g = (inner) => `<g ${K}>${inner}</g>`;
@@ -372,27 +371,57 @@ function hoodArt(id) {
       <path d="M-110 20 h90 l-14 24 h-62z" fill="#b45309"/><path d="M-66 20 V-60 L-20 10Z" fill="#fff"/>`)}<text x="-10" y="60" font-size="24">⚓</text>`;
     case "woods": return `${tree(-80, 20, 1.3, "#15803d")}${tree(0, 0, 1.6, "#166534")}${tree(80, 24, 1.2, "#22c55e")}<text x="-30" y="50" font-size="30">🐉</text><text x="40" y="54" font-size="22">🍄</text>`;
     case "downtown": return `${tower(-80, 50, 50, 150, "#475569")}${tower(-20, 50, 56, 200, "#334155")}${tower(46, 50, 50, 130, "#64748b")}${tower(100, 50, 40, 170, "#1e293b")}`;
-    case "fun": return `<g ${K}><circle cx="-40" cy="-30" r="70" fill="none" stroke-width="6"/>${Array.from({ length: 8 }, (_, i) => { const a = (i / 8) * Math.PI * 2; return `<circle cx="${(-40 + 70 * Math.cos(a)).toFixed(0)}" cy="${(-30 + 70 * Math.sin(a)).toFixed(0)}" r="11" fill="${["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"][i % 4]}"/>`; }).join("")}
-      <path d="M-80 50 L-40 -30 L0 50" fill="none" stroke-width="6"/><path d="M40 50 L40 -10 L120 -10 L120 50Z" fill="#fff"/>${[50, 70, 90, 110].map((x) => `<path d="M${x} -10 V50" stroke="#ef4444" stroke-width="8"/>`).join("")}<path d="M30 -10 L80 -60 L130 -10Z" fill="#ef4444"/></g>`;
-    case "edge": return `<g ${K}><path d="M-140 40 Q-60 10 0 40 V70 H-140Z" fill="#38bdf8"/><circle cx="80" cy="-60" r="34" fill="#fef9c3"/>
+    case "bay": return `${g(`<path d="M-150 20 Q0 60 150 20 V70 H-150Z" fill="#38bdf8"/><path d="M-60 20 h100 l-16 26 h-68z" fill="#b45309"/><path d="M-20 20 V-80 L50 10Z" fill="#fff"/><rect x="80" y="-60" width="40" height="64" rx="18" fill="#ef4444"/>`)}
+      <g font-family="Arial" font-weight="900" font-size="30" fill="#fff" stroke="${INK}" stroke-width="2.5" class="floaty"><text x="-120" y="-40">ק</text><text x="-90" y="-90">ר</text><text x="20" y="-110">א</text></g><text x="60" y="54" font-size="24">🐠</text>`;
+    case "sky": case "edge": return `<g ${K}><path d="M-140 40 Q-60 10 0 40 V70 H-140Z" fill="#38bdf8"/><circle cx="80" cy="-60" r="34" fill="#fef9c3"/>
       <path d="M0 -110 C24 -84 28 -30 22 30 H-22 C-28 -30 -24 -84 0 -110Z" fill="#f8fafc"/><circle cx="0" cy="-50" r="10" fill="#38bdf8"/><path d="M-22 0 L-40 40 L-20 30Z M22 0 L40 40 L20 30Z" fill="#ef4444"/></g>
-      <text x="-110" y="34" font-size="26">🐠</text><text x="90" y="40" font-size="24">❄️</text>`;
+      <text x="-110" y="34" font-size="26">❄️</text><text x="90" y="40" font-size="24">☄️</text>`;
+    case "entown": return `${g(`<rect x="-120" y="-20" width="90" height="70" fill="#fecaca"/><path d="M-130 -20 L-75 -70 L-20 -20Z" fill="#dc2626"/>
+      <rect x="10" y="-40" width="100" height="56" rx="10" fill="#dc2626"/><rect x="10" y="-2" width="100" height="22" rx="4" fill="#b91c1c"/>${[24, 50, 76].map((x) => `<rect x="${x}" y="-32" width="18" height="18" fill="#bae6fd" stroke-width="2.5"/>`).join("")}<circle cx="34" cy="22" r="10" fill="#334155"/><circle cx="90" cy="22" r="10" fill="#334155"/>`)}
+      <text x="-60" y="-80" font-size="30" class="floaty">👋</text><text x="40" y="-60" font-size="20" font-weight="900" font-family="Arial" fill="#fff" stroke="${INK}" stroke-width="1.5">HELLO</text>`;
+    case "enpark": return `${g(["#ef4444", "#3b82f6", "#22c55e"].map((c, i) => `<rect x="${-100 + i * 70}" y="-10" width="60" height="60" rx="8" fill="${c}"/>`).join(""))}
+      <g font-family="Arial" font-weight="900" font-size="42" fill="#fff" stroke="${INK}" stroke-width="2.5"><text x="-86" y="36">A</text><text x="-16" y="36">B</text><text x="52" y="36">C</text></g>
+      <g class="floaty">${[[-110, -70, "#f59e0b"], [110, -80, "#a855f7"], [0, -100, "#ec4899"]].map(([x, y, c]) => `<path d="M${x} ${y + 26} q-4 14 4 26" stroke="${INK}" stroke-width="2" fill="none"/><ellipse cx="${x}" cy="${y}" rx="17" ry="21" fill="${c}" ${K}/>`).join("")}</g>`;
+    case "fun": return hoodArt("enpark");
   }
   return "";
 }
 
-// Is a neighborhood open? The first one always; each next one when every world of the one
-// before it was played at least once (or a world inside it was already played, or parents opened all).
-function hoodOpen(player, i, openAll) {
-  if (openAll || i === 0) return true;
-  const own = NEIGHBORHOODS[i].zones;
-  if (own.some((z) => player.zones[z])) return true;
-  return NEIGHBORHOODS[i - 1].zones.every((z) => player.zones[z]) && hoodOpen(player, i - 1, openAll);
+function realmArt(id) {
+  if (id === "math") return `${tower(-90, 40, 50, 130, "#475569")}${tower(-30, 40, 54, 170, "#334155")}
+    <g transform="translate(70 -10) scale(.55)">${robotSVG(5, 0).replace(/<svg[^>]*>/, "<g transform='translate(-100 -110)'>").replace("</svg>", "</g>")}</g>
+    <g font-family="Arial" font-weight="900" font-size="40" fill="#fde047" stroke="${INK}" stroke-width="3" class="floaty"><text x="-140" y="-80">1</text><text x="-40" y="-130">2</text><text x="60" y="-110">3</text><text x="120" y="-60">+</text></g>`;
+  if (id === "lang") return `${house(-100, 30, "#fef3c7", "#f59e0b")}${tree(110, 40, 1.1)}
+    <g ${K}><path d="M-40 40 V-60 Q0 -76 40 -60 V40 Q0 24 -40 40Z" fill="#fff"/><path d="M0 -68 V32" /><path d="M-30 -40 h20 M-30 -20 h20 M10 -40 h20 M10 -20 h20" stroke-width="3"/></g>
+    <g font-family="Arial" font-weight="900" font-size="40" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="-150" y="-60">א</text><text x="-60" y="-120">ב</text><text x="60" y="-110">ג</text><text x="130" y="-50">ד</text></g>`;
+  return `${hoodArt("entown")}<g font-family="Arial" font-weight="900" font-size="38" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="-150" y="-100">A</text><text x="130" y="-110">B</text></g>`;
+}
+
+// ---------- what's open ----------
+const zonesOfHood = (hoodId) => NEIGHBORHOODS.find((h) => h.id === hoodId).zones;
+const realmZones = (realmId) => REALMS.find((r) => r.id === realmId).hoods.flatMap(zonesOfHood);
+const hoodOfZone = (zoneId) => NEIGHBORHOODS.find((h) => h.zones.includes(zoneId));
+const realmOfZone = (zoneId) => {
+  const z = ZONES.find((x) => x.id === zoneId);
+  if (z && z.ruler) return REALMS.find((r) => r.ruler === zoneId);
+  const h = hoodOfZone(zoneId);
+  return h ? realmOfHood(h.id) : null;
+};
+// In each kingdom the first neighborhood is open; each next one opens when every place of the
+// one before it was played once (or a place in it was already played, or parents opened all).
+function hoodOpen(player, hoodId, openAll) {
+  if (openAll) return true;
+  const r = realmOfHood(hoodId), i = r.hoods.indexOf(hoodId);
+  if (i === 0 || zonesOfHood(hoodId).some((z) => player.zones[z])) return true;
+  return zonesOfHood(r.hoods[i - 1]).every((z) => player.zones[z]) && hoodOpen(player, r.hoods[i - 1], openAll);
+}
+const rulerBeaten = (player, realmId) => player.zones[REALMS.find((r) => r.id === realmId).ruler] > 0;
+function rulerOpen(player, realmId, openAll) {
+  return openAll || rulerBeaten(player, realmId) || realmZones(realmId).every((z) => player.zones[z]);
 }
 function fortressOpen(player, openAll) {
-  return openAll || player.zones.fortress > 0 || NEIGHBORHOODS.every((h) => h.zones.every((z) => player.zones[z]));
+  return openAll || player.zones.fortress > 0 || REALMS.every((r) => rulerBeaten(player, r.id));
 }
-const hoodOfZone = (zoneId) => NEIGHBORHOODS.find((h) => h.zones.includes(zoneId));
 
 function tokenHTML() {
   return `<g id="token" pointer-events="none">
@@ -407,73 +436,124 @@ function tokenHTML() {
     </g>`;
 }
 
-function worldSVG(player, openAll) {
-  const order = NEIGHBORHOODS.map((h) => HOOD_AT[h.id]);
-  const road = smoothPath([[1660, 880], ...order, [1060, 230], FORTRESS_SPOT]);
-  const fOpen = fortressOpen(player, openAll);
-  const regions = NEIGHBORHOODS.map((h, i) => {
-    const [x, y] = HOOD_AT[h.id];
-    const open = hoodOpen(player, i, openAll);
-    const played = h.zones.filter((z) => player.zones[z]).length;
-    const stars = h.zones.reduce((s, z) => s + (player.zones[z] || 0), 0);
-    return `
-      <g class="region ${open ? "" : "locked"}" data-hood="${h.id}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${h.title}">
-        <ellipse cx="0" cy="30" rx="190" ry="120" fill="${h.color}" opacity=".35"/>
-        <ellipse cx="0" cy="20" rx="175" ry="108" fill="#fff8" stroke="${INK}" stroke-width="5" stroke-dasharray="14 10"/>
-        <g class="region-art">${hoodArt(h.id)}</g>
-        ${open ? "" : `<g class="lock"><ellipse cx="0" cy="20" rx="178" ry="110" fill="#1e1b4b99"/><text y="44" text-anchor="middle" font-size="76">🔒</text></g>`}
-        <g transform="translate(0 112)">
-          <rect x="-150" y="-30" width="300" height="60" rx="16" fill="${INK}" transform="translate(6 6)"/>
-          <rect x="-150" y="-30" width="300" height="60" rx="16" fill="${h.color}" stroke="${INK}" stroke-width="5"/>
-          <text x="0" y="14" text-anchor="middle" class="region-label">${h.icon} ${h.title}</text>
-        </g>
-        <g transform="translate(150 -80)">
-          <rect x="-56" y="-22" width="112" height="44" rx="22" fill="#fff" stroke="${INK}" stroke-width="4"/>
-          <text y="9" text-anchor="middle" class="region-count">${played}/${h.zones.length} ⭐${stars}</text>
-        </g>
-      </g>`;
-  }).join("");
+// A big clickable area on a map (a kingdom, a neighborhood, a ruler's castle).
+function regionHTML({ id, x, y, title, color, art, open, count, crown, kind = "hood" }) {
   return `
-  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg world-svg" role="img" aria-label="מפת העיר">
+    <g class="region ${open ? "" : "locked"}" data-${kind}="${id}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${title}">
+      <ellipse cx="0" cy="30" rx="190" ry="120" fill="${color}" opacity=".35"/>
+      <ellipse cx="0" cy="20" rx="175" ry="108" fill="#fff8" stroke="${INK}" stroke-width="5" stroke-dasharray="14 10"/>
+      <g class="region-art">${art}</g>
+      ${open ? "" : `<g class="lock"><ellipse cx="0" cy="20" rx="178" ry="110" fill="#1e1b4b99"/><text y="44" text-anchor="middle" font-size="76">🔒</text></g>`}
+      <g transform="translate(0 112)">
+        <rect x="-160" y="-30" width="320" height="60" rx="16" fill="${INK}" transform="translate(6 6)"/>
+        <rect x="-160" y="-30" width="320" height="60" rx="16" fill="${color}" stroke="${INK}" stroke-width="5"/>
+        <text x="0" y="14" text-anchor="middle" class="region-label">${title}</text>
+      </g>
+      ${count ? `<g transform="translate(150 -80)"><rect x="-62" y="-22" width="124" height="44" rx="22" fill="#fff" stroke="${INK}" stroke-width="4"/><text y="9" text-anchor="middle" class="region-count">${count}</text></g>` : ""}
+      ${crown ? `<text x="-150" y="-60" font-size="54" class="floaty">👑</text>` : ""}
+    </g>`;
+}
+
+function mapFrame(inner, extraDefs = "") {
+  return `
+  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg world-svg" role="img">
     <defs>
       <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
-      
       <pattern id="grass" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="#166534" stroke-width="2.2" fill="none" opacity=".45"/></pattern>
       <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
       <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0369a1"/></linearGradient>
       <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <clipPath id="islandClip"><path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z"/></clipPath>
-      <radialGradient id="evilW" cx="810" cy="130" r="360" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2e1065"/><stop offset=".6" stop-color="#581c87" stop-opacity=".7"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>
+      <clipPath id="islandClip"><path d="${ISLAND}"/></clipPath>
+      ${extraDefs}
     </defs>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sea)"/>
     ${Array.from({ length: 24 }, (_, i) => `<path d="M${(i * 173) % 1560} ${(i * 97) % 980} q14 -10 28 0 t28 0" stroke="#e0f2fe" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>`).join("")}
-    <path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z" fill="#86efac" stroke="${INK}" stroke-width="7"/>
-    <path d="M150 170 Q120 80 310 85 Q600 30 900 75 Q1240 50 1420 110 Q1530 170 1500 420 Q1550 690 1460 850 Q1280 950 900 925 Q500 950 240 895 Q90 830 110 600 Q80 340 150 170Z" fill="#bbf7d0" opacity=".6"/>
+    <path d="${ISLAND}" fill="#86efac" stroke="${INK}" stroke-width="7"/>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#grass)" clip-path="url(#islandClip)"/>
-    <path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z" fill="none" stroke="#fde68a" stroke-width="22" opacity=".8" transform="translate(0 6)"/>
-    <path d="M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z" fill="none" stroke="${INK}" stroke-width="7"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#evilW)"/>
-    ${cloud(160, 70, .9)}${cloud(1450, 60, 1)}${cloud(1500, 960, .8)}
-    <path d="${road}" fill="none" stroke="${INK}" stroke-width="44" stroke-linecap="round"/>
-    <path d="${road}" fill="none" stroke="#fcd9a8" stroke-width="34" stroke-linecap="round"/>
-    <path d="${road}" id="road" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="18 16"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
-    ${regions}
-    <g class="region fortress-spot ${fOpen ? "" : "locked"}" data-hood="fortress" transform="translate(${FORTRESS_SPOT[0]} ${FORTRESS_SPOT[1]}) scale(.8)" tabindex="0" role="button" aria-label="המבצר">
-      <g class="region-art">${PLACE_ART.fortress()}</g>
-      <g transform="translate(0 100)"><rect x="-150" y="-26" width="300" height="52" rx="14" fill="#7c3aed" stroke="${INK}" stroke-width="5"/>
-        <text y="12" text-anchor="middle" class="region-label">🏰 המבצר של ד״ר בלגן</text></g>
-      ${fOpen ? "" : `<text y="0" text-anchor="middle" font-size="70">🔒</text>`}
-    </g>
-    <g transform="translate(1530 905)"><rect x="-70" y="-26" width="140" height="48" rx="12" fill="#22c55e" ${K}/><text y="8" text-anchor="middle" class="spot-label" fill="#fff">התחלה</text></g>
+    <path d="${ISLAND}" fill="none" stroke="#fde68a" stroke-width="22" opacity=".8" transform="translate(0 6)"/>
+    <path d="${ISLAND}" fill="none" stroke="${INK}" stroke-width="7"/>
+    ${inner}
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sunlight)" pointer-events="none"/>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#vignette)" pointer-events="none"/>
     ${tokenHTML()}
   </svg>`;
 }
+function roadHTML(pts, w = 44) {
+  const d = smoothPath(pts);
+  return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="#fcd9a8" stroke-width="${w - 10}" stroke-linecap="round"/>
+    <path d="${d}" id="road" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="18 16"/>`;
+}
+
+function citySVG(player, openAll) {
+  const fOpen = fortressOpen(player, openAll);
+  const road = roadHTML([[1660, 880], REALM_AT.lang, REALM_AT.en, REALM_AT.math, [560, 330], FORTRESS_SPOT]);
+  const realms = REALMS.map((r) => {
+    const zs = realmZones(r.id);
+    const played = zs.filter((z) => player.zones[z]).length;
+    return regionHTML({ id: r.id, kind: "realm", x: REALM_AT[r.id][0], y: REALM_AT[r.id][1], title: `${r.icon} ${r.title}`, color: r.color,
+      art: realmArt(r.id), open: true, count: `${played}/${zs.length}`, crown: rulerBeaten(player, r.id) });
+  }).join("");
+  return mapFrame(`
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#evilW)"/>
+    ${cloud(160, 70, .9)}${cloud(1450, 60, 1)}${cloud(1500, 960, .8)}
+    ${road}
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
+    ${realms}
+    <g class="region fortress-spot ${fOpen ? "" : "locked"}" data-realm="fortress" transform="translate(${FORTRESS_SPOT[0]} ${FORTRESS_SPOT[1]}) scale(.8)" tabindex="0" role="button" aria-label="המבצר">
+      <g class="region-art">${PLACE_ART.fortress()}</g>
+      <g transform="translate(0 100)"><rect x="-150" y="-26" width="300" height="52" rx="14" fill="#7c3aed" stroke="${INK}" stroke-width="5"/>
+        <text y="12" text-anchor="middle" class="region-label">🏰 המבצר של ד״ר בלגן</text></g>
+      ${fOpen ? "" : `<text y="0" text-anchor="middle" font-size="70">🔒</text>`}
+      ${player.zones.fortress ? `<text x="110" y="-80" font-size="60" class="floaty">🏅</text>` : ""}
+    </g>
+    <g transform="translate(1530 905)"><rect x="-70" y="-26" width="140" height="48" rx="12" fill="#22c55e" ${K}/><text y="8" text-anchor="middle" class="spot-label" fill="#fff">התחלה</text></g>`,
+    `<radialGradient id="evilW" cx="810" cy="150" r="360" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2e1065"/><stop offset=".6" stop-color="#581c87" stop-opacity=".7"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>`);
+}
+
+// ===================== A kingdom: its neighborhoods and its ruler's castle =====================
+const RULER_AT = [810, 250];
+const realmHoodSpots = (n) => (n === 2 ? [[1150, 740], [470, 740]] : [[1250, 720], [810, 790], [370, 720]]);
+
+function rulerCastleArt(realm) {
+  const z = ZONES.find((x) => x.id === realm.ruler);
+  return `<g ${K}>
+      <ellipse cx="0" cy="40" rx="140" ry="36" fill="${realm.color}"/>
+      <rect x="-80" y="-40" width="160" height="80" fill="#e2e8f0"/>
+      <rect x="-110" y="-80" width="44" height="120" fill="#cbd5e1"/><rect x="66" y="-80" width="44" height="120" fill="#cbd5e1"/>
+      <path d="M-116 -80 L-88 -124 L-60 -80Z M60 -80 L88 -124 L116 -80Z" fill="${realm.color}"/>
+      <path d="M-80 -40 v-14 h18 v14 h16 v-14 h18 v14 h16 v-14 h18 v14 h16 v-14 h18 v14" fill="#e2e8f0"/>
+      <path d="M-24 40 V4 Q0 -22 24 4 V40Z" fill="#334155"/>
+    </g>
+    <g transform="translate(0 -110) scale(.42)">${BOSS_ART[z.boss](5, 0).replace(/<svg[^>]*>/, "<g transform='translate(-100 -110)'>").replace("</svg>", "</g>")}</g>`;
+}
+
+function realmSVG(realmId, player, openAll) {
+  const realm = REALMS.find((r) => r.id === realmId);
+  const spots = realmHoodSpots(realm.hoods.length);
+  const road = roadHTML([[1660, 880], ...spots, RULER_AT]);
+  const hoods = realm.hoods.map((hid, i) => {
+    const h = NEIGHBORHOODS.find((x) => x.id === hid);
+    const played = h.zones.filter((z) => player.zones[z]).length;
+    const stars = h.zones.reduce((s, z) => s + (player.zones[z] || 0), 0);
+    return regionHTML({ id: hid, x: spots[i][0], y: spots[i][1], title: `${h.icon} ${h.title}`, color: h.color, art: hoodArt(hid),
+      open: hoodOpen(player, hid, openAll), count: `${played}/${h.zones.length} ⭐${stars}` });
+  }).join("");
+  const rz = ZONES.find((x) => x.id === realm.ruler);
+  const ruler = regionHTML({ id: realm.ruler, kind: "ruler", x: RULER_AT[0], y: RULER_AT[1], title: `👑 ${rz.title}`, color: rz.color,
+    art: rulerCastleArt(realm), open: rulerOpen(player, realmId, openAll), crown: rulerBeaten(player, realmId) });
+  return mapFrame(`
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="${realm.color}" opacity=".18" clip-path="url(#islandClip)"/>
+    ${cloud(160, 70, .9)}${cloud(1450, 60, 1)}
+    ${road}
+    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
+    ${hoods}${ruler}
+    <g transform="translate(1530 905)"><rect x="-70" y="-26" width="140" height="48" rx="12" fill="#22c55e" ${K}/><text y="8" text-anchor="middle" class="spot-label" fill="#fff">כניסה</text></g>`);
+}
 
 // ===================== One neighborhood's own screen =====================
 const HOOD_SPOTS = [[1320, 790], [950, 815], [580, 740], [300, 480], [720, 290]];
+const hoodSpots = (n) => (n >= 5 ? HOOD_SPOTS : n === 3 ? [HOOD_SPOTS[0], HOOD_SPOTS[2], HOOD_SPOTS[4]] : HOOD_SPOTS.slice(0, n));
 const HOOD_THEMES = {
   town: { ground: "#86efac", patch: "#4ade80", deco: () => `${house(1150, 330, "#fef3c7", "#f59e0b")}${house(1260, 300, "#fecaca", "#b91c1c")}${house(1370, 340, "#e0f2fe", "#2563eb")}${house(1480, 310, "#ede9fe", "#7c3aed")}${tree(1100, 470)}${tree(1500, 480, .9)}${tree(120, 860)}${tree(220, 920, .8)}${house(860, 520, "#dcfce7", "#15803d")}
       <g font-family="Arial" font-weight="900" font-size="46" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="1180" y="180">א</text><text x="1300" y="150">ב</text><text x="1420" y="190">ג</text><text x="160" y="200">ד</text><text x="300" y="150">ה</text></g>` },
@@ -481,6 +561,11 @@ const HOOD_THEMES = {
       ${Array.from({ length: 10 }, (_, i) => `<path d="M${1060 + (i * 61) % 500} ${60 + (i * 47) % 420} q14 -10 28 0 t28 0" stroke="#e0f2fe" stroke-width="4" fill="none"/>`).join("")}
       <g ${K}><path d="M1240 300 h150 l-24 40 h-102z" fill="#b45309"/><path d="M1310 300 V170 L1390 290Z" fill="#fff"/><rect x="1470" y="80" width="40" height="190" fill="#fff"/><path d="M1470 130 h40 M1470 190 h40" stroke="#ef4444" stroke-width="16"/><rect x="1462" y="54" width="56" height="30" fill="#facc15"/></g>
       <g font-family="Arial" font-weight="900" font-size="40" fill="#fff" stroke="${INK}" stroke-width="3"><text x="1120" y="200">1</text><text x="1180" y="430">2</text><text x="1400" y="440">3</text></g>${tree(140, 880, 1, "#65a30d")}` },
+  bay: { ground: "#fde68a", patch: "#fcd34d", tex: "#b45309", deco: () => `<path d="M1000 0 H1600 V560 Q1400 600 1200 520 Q1060 470 1000 380Z" fill="#38bdf8" ${K}/>
+      ${Array.from({ length: 10 }, (_, i) => `<path d="M${1060 + (i * 61) % 500} ${60 + (i * 47) % 420} q14 -10 28 0 t28 0" stroke="#e0f2fe" stroke-width="4" fill="none"/>`).join("")}
+      <g ${K}><path d="M1240 300 h150 l-24 40 h-102z" fill="#b45309"/><path d="M1310 300 V170 L1390 290Z" fill="#fff"/></g>
+      <g font-family="Arial" font-weight="900" font-size="44" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="1120" y="200">ק</text><text x="1180" y="430">ר</text><text x="1420" y="440">א</text></g>
+      <text x="1460" y="160" font-size="50">🐙</text><text x="1100" y="320" font-size="40">🐠</text>${tree(140, 880, 1, "#65a30d")}` },
   woods: { ground: "#4ade80", patch: "#15803d", deco: () => `${[[1100, 400], [1180, 320], [1280, 420], [1380, 330], [1480, 430], [1540, 300], [1200, 180], [1350, 160], [1500, 170], [100, 860], [200, 930], [60, 700], [880, 520], [1000, 560]].map(([x, y], i) => tree(x, y, 1 + (i % 3) * .2, i % 2 ? "#166534" : "#15803d")).join("")}
       <g font-size="28"><text x="1040" y="250">🍄</text><text x="960" y="600">🍄</text><text x="250" y="780">🦉</text></g>
       <g fill="#fef08a">${Array.from({ length: 14 }, (_, i) => `<circle cx="${(i * 211) % 1500 + 50}" cy="${(i * 131) % 900 + 50}" r="4" class="twinkle"/>`).join("")}</g>` },
@@ -488,8 +573,11 @@ const HOOD_THEMES = {
       <path d="M0 640 H1600" stroke="#64748b" stroke-width="40"/><path d="M0 640 H1600" stroke="#fff" stroke-width="4" stroke-dasharray="30 30"/>${tree(160, 880)}${tree(860, 560, .8)}` },
   fun: { ground: "#fbcfe8", patch: "#f9a8d4", tex: "#be185d", deco: () => `<g ${K}><circle cx="1320" cy="260" r="180" fill="none" stroke-width="8"/>${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M1320 260 L${(1320 + 180 * Math.cos(a)).toFixed(0)} ${(260 + 180 * Math.sin(a)).toFixed(0)}" stroke-width="3"/><circle cx="${(1320 + 180 * Math.cos(a)).toFixed(0)}" cy="${(260 + 180 * Math.sin(a)).toFixed(0)}" r="22" fill="${["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"][i % 4]}"/>`; }).join("")}
       <path d="M1240 520 L1320 260 L1400 520" fill="none" stroke-width="10"/></g>
-      <path d="M40 980 Q200 700 360 900 T700 860" fill="none" stroke="${INK}" stroke-width="10"/><path d="M40 980 Q200 700 360 900 T700 860" fill="none" stroke="#ef4444" stroke-width="5"/>
-      <g class="floaty">${[[1050, 120, "#3b82f6"], [1540, 520, "#22c55e"], [120, 200, "#f59e0b"]].map(([x, y, c]) => `<ellipse cx="${x}" cy="${y}" rx="24" ry="30" fill="${c}" ${K}/>`).join("")}</g>` },
+      <g font-family="Arial" font-weight="900" font-size="54" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="120" y="200">A</text><text x="240" y="150">B</text><text x="1000" y="560">C</text></g>
+      <g class="floaty">${[[1050, 120, "#3b82f6"], [1540, 520, "#22c55e"], [120, 300, "#f59e0b"]].map(([x, y, c]) => `<ellipse cx="${x}" cy="${y}" rx="24" ry="30" fill="${c}" ${K}/>`).join("")}</g>` },
+  en: { ground: "#fecdd3", patch: "#fda4af", tex: "#be123c", deco: () => `${house(1150, 330, "#fff", "#dc2626")}${house(1260, 300, "#dbeafe", "#1d4ed8")}${house(1370, 340, "#fef3c7", "#dc2626")}${house(1480, 310, "#fff", "#1d4ed8")}${tree(1100, 470)}${tree(1500, 480, .9)}${tree(120, 860)}
+      <g ${K}><rect x="1040" y="520" width="200" height="90" rx="14" fill="#dc2626"/><rect x="1040" y="572" width="200" height="38" rx="6" fill="#b91c1c"/>${[1060, 1110, 1160].map((x) => `<rect x="${x}" y="532" width="34" height="30" fill="#bae6fd" stroke-width="3"/>`).join("")}<circle cx="1080" cy="616" r="16" fill="#334155"/><circle cx="1200" cy="616" r="16" fill="#334155"/></g>
+      <g font-family="Arial" font-weight="900" font-size="46" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="1170" y="170">Hi!</text><text x="160" y="200">ABC</text></g>` },
   edge: { ground: "#bae6fd", patch: "#7dd3fc", tex: "#0369a1", deco: () => `<rect x="0" y="0" width="1600" height="300" fill="#1e1b4b"/><g fill="#fef9c3">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 1600}" cy="${(i * 53) % 290}" r="${i % 3 ? 2 : 3.5}" class="${i % 4 ? "" : "twinkle"}"/>`).join("")}</g>
       <circle cx="1420" cy="140" r="60" fill="#fef9c3" ${K}/><g ${K}><circle cx="1150" cy="110" r="36" fill="#f97316"/><ellipse cx="1150" cy="110" rx="62" ry="12" fill="none" stroke="#fde047" stroke-width="5"/></g>
       <path d="M0 640 Q300 600 520 700 T1000 980 H0Z" fill="#0ea5e9" ${K}/><text x="120" y="820" font-size="40">🐠</text><text x="320" y="900" font-size="34">🐙</text>
@@ -498,11 +586,12 @@ const HOOD_THEMES = {
 
 function hoodSVG(hoodId, player) {
   const h = NEIGHBORHOODS.find((x) => x.id === hoodId);
-  const t = HOOD_THEMES[hoodId];
-  const road = smoothPath([[1680, 880], ...HOOD_SPOTS]);
+  const t = HOOD_THEMES[h.theme] || HOOD_THEMES.town;
+  const spots = hoodSpots(h.zones.length);
+  const road = smoothPath([[1680, 880], ...spots]);
   const places = h.zones.map((zid, i) => {
     const z = ZONES.find((x) => x.id === zid);
-    const [x, y] = HOOD_SPOTS[i];
+    const [x, y] = spots[i];
     const n = player.zones[zid] || 0;
     return `
       <g class="spot" data-zone="${zid}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${z.title}">
@@ -523,12 +612,10 @@ function hoodSVG(hoodId, player) {
   return `
   <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg hood-svg" role="img" aria-label="${h.title}">
     <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
-      <pattern id="grass" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="#166534" stroke-width="2.2" fill="none" opacity=".45"/></pattern>
       <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
-      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0369a1"/></linearGradient>
-      <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+      <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <pattern id="tex" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="${t.tex || "#166534"}" stroke-width="2.2" fill="none" opacity=".4"/></pattern></defs>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="${t.ground}"/>
-    <pattern id="tex" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="${t.tex || "#166534"}" stroke-width="2.2" fill="none" opacity=".4"/></pattern>
     <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#tex)"/>
     <g fill="${t.patch}" opacity=".7"><ellipse cx="300" cy="200" rx="280" ry="120"/><ellipse cx="900" cy="560" rx="260" ry="90"/><ellipse cx="1300" cy="900" rx="320" ry="100"/></g>
     ${t.deco()}
@@ -585,5 +672,56 @@ function walkToken(svg, points, fromId, toId, done) {
   };
   requestAnimationFrame(step);
 }
-const worldPoints = () => ({ ...HOOD_AT, fortress: FORTRESS_SPOT });
-const hoodPoints = (hoodId) => Object.fromEntries(NEIGHBORHOODS.find((h) => h.id === hoodId).zones.map((z, i) => [z, HOOD_SPOTS[i]]));
+const cityPoints = () => ({ ...REALM_AT, fortress: FORTRESS_SPOT });
+const realmPoints = (realmId) => { const r = REALMS.find((x) => x.id === realmId); const sp = realmHoodSpots(r.hoods.length); return { ...Object.fromEntries(r.hoods.map((h, i) => [h, sp[i]])), [r.ruler]: RULER_AT }; };
+const hoodPoints = (hoodId) => { const zs = zonesOfHood(hoodId); const sp = hoodSpots(zs.length); return Object.fromEntries(zs.map((z, i) => [z, sp[i]])); };
+
+// ---------- drawings of the English places ----------
+Object.assign(PLACE_ART, {
+  enfood: () => `
+    <g ${K}>
+      <rect x="-90" y="-30" width="180" height="76" fill="#fff7ed"/>
+      <path d="M-100 -30 L-90 -60 H90 L100 -30 Q88 -18 76 -30 Q64 -18 52 -30 Q40 -18 28 -30 Q16 -18 4 -30 Q-8 -18 -20 -30 Q-32 -18 -44 -30 Q-56 -18 -68 -30 Q-80 -18 -92 -30Z" fill="#ef4444"/>
+      <rect x="-70" y="-6" width="56" height="40" fill="#bae6fd"/><rect x="20" y="-2" width="40" height="48" fill="#7c2d12"/>
+      <rect x="-50" y="-104" width="100" height="38" rx="10" fill="#fff"/>
+    </g>
+    <text x="0" y="-78" text-anchor="middle" font-family="Arial" font-weight="900" font-size="22" fill="${INK}">YUMMY</text>
+    <text x="-110" y="40" font-size="30">🍎</text><text x="88" y="40" font-size="28">🍕</text>`,
+  enanimals: () => `
+    <g ${K}>
+      <rect x="-80" y="-34" width="130" height="80" fill="#dc2626"/>
+      <path d="M-92 -34 L-15 -96 L62 -34Z" fill="#991b1b"/>
+      <path d="M-40 46 V0 H20 V46Z M-40 0 L20 46 M20 0 L-40 46" fill="#fef3c7" stroke-width="3"/>
+      <path d="M60 46 h80 M70 20 h70" stroke-width="5"/>${[70, 95, 120].map((x) => `<path d="M${x} 12 v34" stroke-width="5"/>`).join("")}
+    </g>
+    <text x="68" y="10" font-size="34">🐄</text><text x="-120" y="40" font-size="28">🐶</text>
+    <text x="-60" y="-110" font-family="Arial" font-weight="900" font-size="22" fill="#fff" stroke="${INK}" stroke-width="1.5" class="floaty">MOO!</text>`,
+  encolors: () => `
+    <g ${K}>
+      <path d="M-120 40 A120 120 0 0 1 120 40" fill="none" stroke="#ef4444" stroke-width="16"/>
+      <path d="M-104 40 A104 104 0 0 1 104 40" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="butt"/>
+      <path d="M-88 40 A88 88 0 0 1 88 40" fill="none" stroke="#facc15" stroke-width="16"/>
+      <path d="M-72 40 A72 72 0 0 1 72 40" fill="none" stroke="#22c55e" stroke-width="16"/>
+      <path d="M-56 40 A56 56 0 0 1 56 40" fill="none" stroke="#3b82f6" stroke-width="16"/>
+      <path d="M-40 40 A40 40 0 0 1 40 40" fill="none" stroke="#a855f7" stroke-width="16"/>
+    </g>
+    <g stroke="${INK}" stroke-width="3"><circle cx="-120" cy="56" r="12" fill="#ef4444"/><circle cx="120" cy="56" r="12" fill="#3b82f6"/></g>`,
+  ennumbers: () => `
+    <g ${K}>
+      <rect x="-12" y="-110" width="24" height="160" fill="#64748b"/>
+      <path d="M-100 -96 h96 l18 18 l-18 18 h-96z" fill="#0ea5e9"/>
+      <path d="M100 -46 h-96 l-18 18 l18 18 h96z" fill="#f59e0b"/>
+    </g>
+    <text x="-56" y="-70" text-anchor="middle" font-family="Arial" font-weight="900" font-size="22" fill="#fff" stroke="${INK}" stroke-width="1.2">ONE, TWO</text>
+    <text x="54" y="-21" text-anchor="middle" font-family="Arial" font-weight="900" font-size="24" fill="#fff" stroke="${INK}" stroke-width="1.2">1 2 3</text>`,
+  enabc: () => `
+    <g ${K}>${[["#ef4444", -84, 0], ["#3b82f6", -14, 0], ["#22c55e", 56, 0], ["#f59e0b", -50, -66], ["#a855f7", 20, -66]].map(([c, x, y]) => `<rect x="${x}" y="${y - 20}" width="62" height="62" rx="8" fill="${c}"/>`).join("")}</g>
+    <g font-family="Arial" font-weight="900" font-size="40" fill="#fff" stroke="${INK}" stroke-width="2.5"><text x="-68" y="26">A</text><text x="2" y="26">B</text><text x="72" y="26">C</text><text x="-34" y="-40">D</text><text x="36" y="-40">E</text></g>`,
+  enbody: () => `
+    <g ${K}>
+      <rect x="-90" y="-36" width="150" height="82" fill="#fce7f3"/>
+      <path d="M-102 -36 L-15 -96 L72 -36Z" fill="#db2777"/>
+      <rect x="-66" y="-12" width="44" height="34" fill="#bae6fd"/><rect x="14" y="0" width="34" height="46" fill="#9d174d"/>
+    </g>
+    <text x="70" y="40" font-size="40">🧸</text><text x="-130" y="-50" font-size="30" class="floaty">✋</text><text x="40" y="-100" font-size="28" class="floaty">👃</text>`,
+});

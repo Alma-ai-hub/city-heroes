@@ -57,15 +57,16 @@ const Voice = {
     document.addEventListener("keydown", unlock, true);
   },
 
-  // Rank the device's Hebrew voices: natural/enhanced ones first.
+  // Rank the device's voices: natural/enhanced ones first. Hebrew for most things, English for English words.
   pickVoice() {
     const all = speechSynthesis.getVoices();
-    const he = all.filter((v) => v.lang && /^he|^iw/i.test(v.lang));
     const score = (v) => (/natural|online|neural/i.test(v.name) ? 40 : 0) + (/premium|enhanced|plus/i.test(v.name) ? 30 : 0)
-      + (/google/i.test(v.name) ? 15 : 0) + (v.localService ? 0 : 5);
-    this.voices = he.sort((a, b) => score(b) - score(a));
+      + (/google/i.test(v.name) ? 15 : 0) + (/samantha|aria|jenny|ava/i.test(v.name) ? 10 : 0) + (v.localService ? 0 : 5);
+    this.voices = all.filter((v) => v.lang && /^he|^iw/i.test(v.lang)).sort((a, b) => score(b) - score(a));
     const chosen = this.prefs.voiceName && this.voices.find((v) => v.name === this.prefs.voiceName);
     this.voice = chosen || this.voices[0] || null;
+    const en = all.filter((v) => v.lang && /^en[-_]?(us|gb)?/i.test(v.lang)).sort((a, b) => score(b) - score(a) + (/en.us/i.test(b.lang) ? 3 : 0) - (/en.us/i.test(a.lang) ? 3 : 0));
+    this.enVoice = en[0] || null;
     this.ready = true;
   },
 
@@ -78,13 +79,25 @@ const Voice = {
   hasRecorded() { return !!(window.VOICE_CLIPS && Object.keys(window.VOICE_CLIPS).length); },
   hasHebrew() { return this.hasRecorded() || !!this.voice; },
 
+  // A part is a Hebrew text, or { en: "apple" } for an English word (said with an English voice).
   say(text, onEnd) {
     this.stop();
-    const parts = (Array.isArray(text) ? text : [text]).map(VOICE_KEY).filter(Boolean);
+    const parts = (Array.isArray(text) ? text : [text])
+      .map((p) => (p && typeof p === "object" ? { en: VOICE_KEY(p.en) } : VOICE_KEY(p ?? "")))
+      .filter((p) => (typeof p === "object" ? p.en : p));
     if (!parts.length) { if (onEnd) onEnd(); return; }
     const clips = window.VOICE_CLIPS || {};
-    if (parts.every((p) => clips[p])) return this.playClips(parts.map((p) => clips[p]), onEnd);
-    this.speak(parts.join(" "), onEnd);
+    const key = (p) => (typeof p === "object" ? "en:" + p.en : p);
+    if (parts.every((p) => clips[key(p)])) return this.playClips(parts.map((p) => clips[key(p)]), onEnd);
+    // Join Hebrew parts that come one after another; English words are said on their own.
+    const segs = [];
+    for (const p of parts) {
+      const en = typeof p === "object";
+      const last = segs[segs.length - 1];
+      if (!en && last && !last.en) last.text += " " + p;
+      else segs.push(en ? { text: p.en, en: true } : { text: p, en: false });
+    }
+    this.speak(segs, onEnd);
   },
 
   playClips(files, onEnd) {
@@ -102,20 +115,25 @@ const Voice = {
     next();
   },
 
-  speak(text, onEnd) {
+  speak(segs, onEnd) {
+    if (typeof segs === "string") segs = [{ text: segs, en: false }];
     if (!("speechSynthesis" in window)) { if (onEnd) onEnd(); return; }
     const my = this.token;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "he-IL";
-    if (this.voice) u.voice = this.voice;
-    u.rate = this.prefs.rate || 0.9;
-    u.pitch = 1.05;
-    if (onEnd) u.onend = onEnd;
+    const us = segs.map((s, i) => {
+      const u = new SpeechSynthesisUtterance(s.text);
+      u.lang = s.en ? "en-US" : "he-IL";
+      const v = s.en ? this.enVoice : this.voice;
+      if (v) u.voice = v;
+      u.rate = s.en ? 0.8 : (this.prefs.rate || 0.9);
+      u.pitch = 1.05;
+      if (i === segs.length - 1 && onEnd) u.onend = onEnd;
+      return u;
+    });
     // A short pause after stopping the previous sentence: some tablets drop speech said right away.
     setTimeout(() => {
       if (my !== this.token) return;
       try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
-      speechSynthesis.speak(u);
+      us.forEach((u) => speechSynthesis.speak(u));
     }, 80);
   },
 

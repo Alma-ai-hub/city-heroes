@@ -55,7 +55,7 @@ function wireSpeak(el, api, speech) {
 }
 
 // A question with a few big buttons to choose from.
-function choiceQuestion(el, api, { text, speech, visual = "", options, answer, optionClass = "" }) {
+function choiceQuestion(el, api, { text, speech, visual = "", options, answer, optionClass = "", teach }) {
   el.innerHTML = `
     ${promptHTML(text)}
     <div class="visual">${visual}</div>
@@ -71,7 +71,7 @@ function choiceQuestion(el, api, { text, speech, visual = "", options, answer, o
       if (btn.dataset.v === String(answer)) {
         done = true;
         btn.classList.add("right");
-        api.correct();
+        api.correct(teach);
       } else {
         wrong++;
         btn.classList.add("wrong");

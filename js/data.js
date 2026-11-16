@@ -290,18 +290,126 @@ const ZONES = [
     story: "דּוֹקְטוֹר בַּלָּגָן שָׁלַח גֶּשֶׁם שֶׁל מֶטֵאוֹרִים! תְּפֹס רַק אֶת הַמֶּטֵאוֹרִים הַנְּכוֹנִים.",
     storyText: "ד״ר בלגן שלח גשם של מטאורים! תפוס רק את המטאורים הנכונים.",
   },
+  // ---- English (2026-11-16) ----
+  {
+    id: "enfood", title: "מסעדת Yummy", icon: "🍎", color: "#ef4444", skill: "אוכל באנגלית", realm: "en",
+    teaches: "לשמוע שם של מאכל באנגלית (apple, banana, cake...) ולבחור את התמונה, לספור באנגלית, מילים של דברים בבית.",
+    story: "דּוֹקְטוֹר בַּלָּגָן בִּלְבֵּל אֶת הַתַּפְרִיט בַּמִּסְעָדָה! הַקְשֵׁב לַמִּלִּים בְּאַנְגְּלִית, וּבְחַר אֶת הָאֹכֶל הַנָּכוֹן.",
+    storyText: "ד״ר בלגן בלבל את התפריט במסעדה! הקשב למילים באנגלית, ובחר את האוכל הנכון.",
+  },
+  {
+    id: "enanimals", title: "חוות Animals", icon: "🐶", color: "#16a34a", skill: "חיות באנגלית", realm: "en",
+    teaches: "לשמוע שם של חיה באנגלית ולבחור אותה, ואיזו חיה עושה את הקול (Moo, Woof, Meow...).",
+    story: "כׇּל הַחַיּוֹת בַּחַוָּה שָׁכְחוּ אֶת הַשֵּׁמוֹת שֶׁלָּהֶן בְּאַנְגְּלִית! עֲזֹר לָהֶן לִזְכֹּר.",
+    storyText: "כל החיות בחווה שכחו את השמות שלהן באנגלית! עזור להן לזכור.",
+  },
+  {
+    id: "encolors", title: "עיר Colors", icon: "🎨", color: "#a855f7", skill: "צבעים באנגלית", realm: "en",
+    teaches: "לשמוע שם של צבע באנגלית (red, blue, green...) ולבחור אותו, לפוצץ בלונים בצבע ששומעים.",
+    story: "דּוֹקְטוֹר בַּלָּגָן מָחַק אֶת הַצְּבָעִים מֵהָעִיר! הַקְשֵׁב לַשֵּׁם שֶׁל הַצֶּבַע בְּאַנְגְּלִית, וְהַחְזֵר אוֹתוֹ.",
+    storyText: "ד״ר בלגן מחק את הצבעים מהעיר! הקשב לשם של הצבע באנגלית, והחזר אותו.",
+  },
+  {
+    id: "ennumbers", title: "רחוב Numbers", icon: "🔟", color: "#0ea5e9", skill: "מספרים באנגלית", realm: "en",
+    teaches: "לשמוע מספר באנגלית (one, two, three...) ולבחור אותו, לספור באנגלית ביחד.",
+    story: "הַמִּסְפָּרִים בָּרְחוֹב הִתְחִילוּ לְדַבֵּר אַנְגְּלִית! הַקְשֵׁב וּסְפֹר אִתָּם.",
+    storyText: "המספרים ברחוב התחילו לדבר אנגלית! הקשב וספור איתם.",
+  },
+  {
+    id: "enabc", title: "פארק ABC", icon: "🔤", color: "#f59e0b", skill: "אותיות באנגלית", realm: "en",
+    teaches: "לזהות אותיות באנגלית (A, B, C...) לפי מה ששומעים, ולפוצץ בלונים עם האות.",
+    story: "הָאוֹתִיּוֹת בְּאַנְגְּלִית בָּרְחוּ לַפַּארְק! מְצָא אוֹתָן לְפִי הַשֵּׁם שֶׁלָּהֶן.",
+    storyText: "האותיות באנגלית ברחו לפארק! מצא אותן לפי השם שלהן.",
+  },
+  {
+    id: "enbody", title: "בית My Body", icon: "🧍", color: "#ec4899", skill: "גוף וחפצים באנגלית", realm: "en",
+    teaches: "לשמוע חלק בגוף באנגלית (hand, eye, nose...) ולבחור אותו, ושמות של צעצועים וחפצים.",
+    story: "דּוֹקְטוֹר בַּלָּגָן בִּלְבֵּל אֶת הַמִּלִּים שֶׁל הַגּוּף! הַקְשֵׁב וְהַרְאֵה מָה שָׁמַעְתָּ.",
+    storyText: "ד״ר בלגן בלבל את המילים של הגוף! הקשב והראה מה שמעת.",
+  },
+  // ---- the three rulers (beat each one before Dr. Balagan) ----
+  {
+    id: "ruler-math", title: "מגה־רובוט, מלך המספרים", icon: "👑", color: "#1d4ed8", skill: "קרב שליט: חשבון", boss: "robotking", ruler: true, realm: "math",
+    teaches: "קרב נגד שליט ממלכת המספרים: אתגרים מכל עולמות החשבון.",
+    story: "מֶגָה רוֹבּוֹט, מֶלֶךְ הַמִּסְפָּרִים, שׁוֹמֵר עַל הַמַּמְלָכָה בִּשְׁבִיל דּוֹקְטוֹר בַּלָּגָן! פְּתֹר תַּרְגִּילִים כְּדֵי לְנַצֵּחַ אוֹתוֹ.",
+    storyText: "מגה־רובוט, מלך המספרים, שומר על הממלכה בשביל ד״ר בלגן! פתור תרגילים כדי לנצח אותו.",
+  },
+  {
+    id: "ruler-lang", title: "המכשפה בלבולה", icon: "👑", color: "#b45309", skill: "קרב שליט: אותיות", boss: "witch", ruler: true, realm: "lang",
+    teaches: "קרב נגד שליטת ממלכת האותיות: אתגרים מכל עולמות השפה.",
+    story: "הַמְּכַשֵּׁפָה בִּלְבּוּלָה מְעַרְבֶּבֶת אֶת כׇּל הָאוֹתִיּוֹת! קְרָא וּכְתֹב כְּדֵי לְנַצֵּחַ אוֹתָהּ.",
+    storyText: "המכשפה בלבולה מערבבת את כל האותיות! קרא וכתוב כדי לנצח אותה.",
+  },
+  {
+    id: "ruler-en", title: "מיסטר מיקס", icon: "👑", color: "#be185d", skill: "קרב שליט: אנגלית", boss: "mrmix", ruler: true, realm: "en",
+    teaches: "קרב נגד שליט ממלכת האנגלית: אתגרים מכל עולמות האנגלית.",
+    story: "מִיסְטֶר מִיקְס הֶעֱלִים אֶת כׇּל הַמִּלִּים בְּאַנְגְּלִית! הַקְשֵׁב וּבְחַר כְּדֵי לְנַצֵּחַ אוֹתוֹ.",
+    storyText: "מיסטר מיקס העלים את כל המילים באנגלית! הקשב ובחר כדי לנצח אותו.",
+  },
 ];
 
-// The six neighborhoods of the city (each one is its own screen), in the order they open.
-// The fortress is the final battle, on the big map.
-const NEIGHBORHOODS = [
-  { id: "town", title: "רחוב האותיות", spoken: "רְחוֹב הָאוֹתִיּוֹת", icon: "🏘️", color: "#f59e0b", zones: ["letters", "reading", "writing", "zoo", "circus"] },
-  { id: "harbor", title: "נמל המספרים", spoken: "נְמַל הַמִּסְפָּרִים", icon: "⚓", color: "#0ea5e9", zones: ["numbers", "treasure", "bakery", "market", "monster"] },
-  { id: "woods", title: "היער הקסום", spoken: "הַיַּעַר הַקָּסוּם", icon: "🌲", color: "#16a34a", zones: ["forest", "dragon", "music", "maze", "farm"] },
-  { id: "downtown", title: "מרכז העיר", spoken: "מֶרְכַּז הָעִיר", icon: "🏙️", color: "#64748b", zones: ["fire", "stadium", "train", "post", "lab"] },
-  { id: "fun", title: "ארץ ההרפתקאות", spoken: "אֶרֶץ הַהַרְפַּתְקָאוֹת", icon: "🎢", color: "#ec4899", zones: ["lunapark", "shapes", "giants", "studio", "magic"] },
-  { id: "edge", title: "הים והחלל", spoken: "הַיָּם וְהֶחָלָל", icon: "🚀", color: "#4f46e5", zones: ["underwater", "fishing", "ice", "space", "meteors"] },
+// The city has three kingdoms (numbers, letters, English). Each kingdom has neighborhoods
+// (each one is its own screen, with its places) and a ruler to beat. After all three rulers
+// comes Dr. Balagan's fortress.
+const REALMS = [
+  { id: "math", title: "ממלכת המספרים", spoken: "מַמְלֶכֶת הַמִּסְפָּרִים", icon: "🔢", color: "#2563eb", hoods: ["harbor", "downtown", "sky"], ruler: "ruler-math" },
+  { id: "lang", title: "ממלכת האותיות", spoken: "מַמְלֶכֶת הָאוֹתִיּוֹת", icon: "📚", color: "#f59e0b", hoods: ["town", "woods", "bay"], ruler: "ruler-lang" },
+  { id: "en", title: "ממלכת האנגלית", spoken: "מַמְלֶכֶת הָאַנְגְּלִית", icon: "🔤", color: "#db2777", hoods: ["entown", "enpark"], ruler: "ruler-en" },
 ];
+
+// theme = which background the neighborhood screen draws.
+const NEIGHBORHOODS = [
+  { id: "town", title: "רחוב האותיות", spoken: "רְחוֹב הָאוֹתִיּוֹת", icon: "🏘️", color: "#f59e0b", theme: "town", zones: ["letters", "reading", "writing", "zoo", "circus"] },
+  { id: "woods", title: "היער הקסום", spoken: "הַיַּעַר הַקָּסוּם", icon: "🌲", color: "#16a34a", theme: "woods", zones: ["forest", "dragon", "music", "maze", "farm"] },
+  { id: "bay", title: "מפרץ הקריאה", spoken: "מִפְרַץ הַקְּרִיאָה", icon: "🌊", color: "#0284c7", theme: "bay", zones: ["underwater", "fishing", "post", "train", "magic"] },
+  { id: "harbor", title: "נמל המספרים", spoken: "נְמַל הַמִּסְפָּרִים", icon: "⚓", color: "#0ea5e9", theme: "harbor", zones: ["numbers", "treasure", "bakery", "market", "monster"] },
+  { id: "downtown", title: "מרכז העיר", spoken: "מֶרְכַּז הָעִיר", icon: "🏙️", color: "#64748b", theme: "downtown", zones: ["fire", "stadium", "lab", "shapes", "giants"] },
+  { id: "sky", title: "החלל והקרח", spoken: "הֶחָלָל וְהַקֶּרַח", icon: "🚀", color: "#4f46e5", theme: "edge", zones: ["space", "ice", "meteors", "lunapark", "studio"] },
+  { id: "entown", title: "Hello Town", spoken: "הֶלוֹ טָאוּן", icon: "👋", color: "#db2777", theme: "en", zones: ["enfood", "enanimals", "encolors"] },
+  { id: "enpark", title: "ABC Park", spoken: "אֵי בִּי סִי פַּארְק", icon: "🎈", color: "#f97316", theme: "fun", zones: ["ennumbers", "enabc", "enbody"] },
+];
+const realmOfHood = (hoodId) => REALMS.find((r) => r.hoods.includes(hoodId));
+
+// ---------- English words (very basic) ----------
+// en = the word, e = picture, n = the Hebrew word (with vowel marks), lvl 1 = easiest.
+const EN_WORDS = [
+  { en: "apple", e: "🍎", n: "תַּפּוּחַ", cat: "food", lvl: 1 }, { en: "banana", e: "🍌", n: "בָּנָנָה", cat: "food", lvl: 1 },
+  { en: "cake", e: "🎂", n: "עוּגָה", cat: "food", lvl: 1 }, { en: "milk", e: "🥛", n: "חָלָב", cat: "food", lvl: 1 },
+  { en: "egg", e: "🥚", n: "בֵּיצָה", cat: "food", lvl: 1 }, { en: "pizza", e: "🍕", n: "פִּיצָה", cat: "food", lvl: 1 },
+  { en: "bread", e: "🍞", n: "לֶחֶם", cat: "food", lvl: 2 }, { en: "ice cream", e: "🍦", n: "גְּלִידָה", cat: "food", lvl: 2 },
+  { en: "cookie", e: "🍪", n: "עוּגִיָּה", cat: "food", lvl: 2 }, { en: "carrot", e: "🥕", n: "גֶּזֶר", cat: "food", lvl: 2 },
+  { en: "grapes", e: "🍇", n: "עֲנָבִים", cat: "food", lvl: 3 }, { en: "strawberry", e: "🍓", n: "תּוּת", cat: "food", lvl: 3 },
+  { en: "orange", e: "🍊", n: "תַּפּוּז", cat: "food", lvl: 2 }, { en: "watermelon", e: "🍉", n: "אֲבַטִּיחַ", cat: "food", lvl: 3 },
+  { en: "cat", e: "🐱", n: "חָתוּל", cat: "animals", lvl: 1, says: "Meow" }, { en: "dog", e: "🐶", n: "כֶּלֶב", cat: "animals", lvl: 1, says: "Woof woof" },
+  { en: "fish", e: "🐟", n: "דָּג", cat: "animals", lvl: 1 }, { en: "bird", e: "🐦", n: "צִפּוֹר", cat: "animals", lvl: 1, says: "Tweet tweet" },
+  { en: "cow", e: "🐄", n: "פָּרָה", cat: "animals", lvl: 1, says: "Moo" }, { en: "duck", e: "🦆", n: "בַּרְוָז", cat: "animals", lvl: 1, says: "Quack quack" },
+  { en: "horse", e: "🐴", n: "סוּס", cat: "animals", lvl: 2, says: "Neigh" }, { en: "pig", e: "🐷", n: "חֲזִיר", cat: "animals", lvl: 2, says: "Oink oink" },
+  { en: "lion", e: "🦁", n: "אַרְיֵה", cat: "animals", lvl: 2, says: "Roar" }, { en: "frog", e: "🐸", n: "צְפַרְדֵּעַ", cat: "animals", lvl: 2, says: "Ribbit" },
+  { en: "sheep", e: "🐑", n: "כִּבְשָׂה", cat: "animals", lvl: 2, says: "Baa" }, { en: "rabbit", e: "🐰", n: "אַרְנָב", cat: "animals", lvl: 2 },
+  { en: "monkey", e: "🐒", n: "קוֹף", cat: "animals", lvl: 3 }, { en: "elephant", e: "🐘", n: "פִּיל", cat: "animals", lvl: 3 },
+  { en: "bear", e: "🐻", n: "דֹּב", cat: "animals", lvl: 2 }, { en: "chicken", e: "🐔", n: "תַּרְנְגֹלֶת", cat: "animals", lvl: 3, says: "Cluck cluck" },
+  { en: "hand", e: "✋", n: "יָד", cat: "body", lvl: 1 }, { en: "eye", e: "👁️", n: "עַיִן", cat: "body", lvl: 1 },
+  { en: "nose", e: "👃", n: "אַף", cat: "body", lvl: 1 }, { en: "ear", e: "👂", n: "אֹזֶן", cat: "body", lvl: 1 },
+  { en: "mouth", e: "👄", n: "פֶּה", cat: "body", lvl: 2 }, { en: "foot", e: "🦶", n: "כַּף רֶגֶל", cat: "body", lvl: 2 },
+  { en: "leg", e: "🦵", n: "רֶגֶל", cat: "body", lvl: 2 }, { en: "teeth", e: "🦷", n: "שִׁנַּיִם", cat: "body", lvl: 3 },
+  { en: "ball", e: "⚽", n: "כַּדּוּר", cat: "things", lvl: 1 }, { en: "car", e: "🚗", n: "מְכוֹנִית", cat: "things", lvl: 1 },
+  { en: "house", e: "🏠", n: "בַּיִת", cat: "things", lvl: 1 }, { en: "sun", e: "☀️", n: "שֶׁמֶשׁ", cat: "things", lvl: 1 },
+  { en: "book", e: "📖", n: "סֵפֶר", cat: "things", lvl: 1 }, { en: "hat", e: "🧢", n: "כּוֹבַע", cat: "things", lvl: 1 },
+  { en: "star", e: "⭐", n: "כּוֹכָב", cat: "things", lvl: 2 }, { en: "moon", e: "🌙", n: "יָרֵחַ", cat: "things", lvl: 2 },
+  { en: "tree", e: "🌳", n: "עֵץ", cat: "things", lvl: 2 }, { en: "flower", e: "🌸", n: "פֶּרַח", cat: "things", lvl: 2 },
+  { en: "shoe", e: "👟", n: "נַעַל", cat: "things", lvl: 2 }, { en: "bus", e: "🚌", n: "אוֹטוֹבּוּס", cat: "things", lvl: 2 },
+  { en: "train", e: "🚂", n: "רַכֶּבֶת", cat: "things", lvl: 3 }, { en: "airplane", e: "✈️", n: "מָטוֹס", cat: "things", lvl: 3 },
+  { en: "balloon", e: "🎈", n: "בָּלוֹן", cat: "things", lvl: 3 }, { en: "teddy bear", e: "🧸", n: "דֻּבִּי", cat: "things", lvl: 3 },
+];
+const EN_COLORS = [
+  { en: "red", c: "#ef4444", n: "אָדֹם", lvl: 1 }, { en: "blue", c: "#2563eb", n: "כָּחֹל", lvl: 1 },
+  { en: "yellow", c: "#facc15", n: "צָהֹב", lvl: 1 }, { en: "green", c: "#22c55e", n: "יָרֹק", lvl: 1 },
+  { en: "orange", c: "#f97316", n: "כָּתֹם", lvl: 2 }, { en: "purple", c: "#9333ea", n: "סָגֹל", lvl: 2 },
+  { en: "pink", c: "#f472b6", n: "וָרֹד", lvl: 2 }, { en: "black", c: "#111111", n: "שָׁחֹר", lvl: 3 },
+  { en: "white", c: "#ffffff", n: "לָבָן", lvl: 3 }, { en: "brown", c: "#92400e", n: "חוּם", lvl: 3 },
+];
+const EN_NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+const EN_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 // Color words (for reading), with the color itself.
 const COLOR_WORDS = [
