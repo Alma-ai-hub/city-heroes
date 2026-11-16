@@ -1083,3 +1083,14 @@ button, .spot, .region, .maze-cell, .balloon, .fish, .meteor { touch-action: man
 .realm-details ul { margin: 0; font-size: 16px; }
 
 .base-part.next-part { animation: twinkle 1.8s ease-in-out infinite; }
+
+/* the name is now "The City Heroes" (2026-11-17): an English comic-book logo */
+.logo { direction: ltr; }
+.logo-top, .logo-main { font-family: "Bangers", var(--display); letter-spacing: 3px; }
+.logo-top { font-size: clamp(40px, 6vw, 66px); }
+.logo-main { font-size: clamp(90px, 14vw, 150px); padding: 0 .08em; }
+.logo.small .logo-top { font-size: 26px; letter-spacing: 1px; }
+.logo.small .logo-main { font-size: 38px; letter-spacing: 1px; }
+
+.transfer-code { width: 100%; font: 14px monospace; direction: ltr; border: 3px solid #111; border-radius: 10px; padding: 8px; margin: 6px 0; }
+.file-btn { display: inline-flex; align-items: center; cursor: pointer; }

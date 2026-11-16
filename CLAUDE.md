@@ -1,4 +1,6 @@
-# גיבורי העיר (City Heroes)
+# The City Heroes (גיבורי העיר)
+
+Renamed 2026-11-17 to **The City Heroes** (Liora bought thecityheroes.com): English comic logo (Bangers font), page title and app name.
 
 Liora's side project (started 2026-11-09): a learning game for **Bar and Yarden, two boys
 aged 5**. Goal: practice letters, numbers, basic reading, basic writing and basic math.

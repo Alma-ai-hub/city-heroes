@@ -67,7 +67,7 @@ function confetti() {
 
 const logoHTML = (small) => `
   <div class="logo ${small ? "small" : ""}">
-    <span class="logo-top">גיבורי</span><span class="logo-main">העיר</span>
+    <span class="logo-top">The City</span><span class="logo-main">Heroes</span>
   </div>`;
 
 // ---------- Screen 1: choose a hero ----------
@@ -86,7 +86,7 @@ function showHome() {
             <span class="hero-name">${HEROES[id].name}</span>
             <span class="hero-title">${HEROES[id].title}</span>
             <span class="hero-stars">⭐ ${state.players[id].stars}</span>
-          </button>`).join(Object.keys(HEROES).length > 3 ? "" : `<div class="vs">${burstSVG("או")}</div>`)}
+          </button>`).join(Object.keys(HEROES).length > 2 ? "" : `<div class="vs">${burstSVG("או")}</div>`)}
         ${Object.keys(HEROES).length < 8 ? `<button class="hero-card add-hero" data-add-hero><span class="plus">➕</span><span class="hero-title">גיבור חדש</span></button>` : ""}
       </div>
       <button class="team-btn" data-team>${Object.keys(HEROES).map((id) => heroFaceSVG(id, 52)).join("")}<span>משחקים ביחד!</span></button>
@@ -674,6 +674,20 @@ function showParents() {
           <p>👑 <b>${ZONES.find((z) => z.id === r.ruler).title}</b>: ${ZONES.find((z) => z.id === r.ruler).teaches}</p></details>`).join("")}
         <p>🏰 <b>המבצר של ד״ר בלגן</b>: נפתח אחרי ששלושת השליטים נוצחו. קרב סיום מכל הממלכות, מדליה ותעודה.</p>
       </div>
+      <div class="panel transfer">
+        <h3>📦 העברת ההתקדמות</h3>
+        <p>כדי להעביר את הכוכבים, הבסיסים והגיבורים לכתובת אחרת או למכשיר אחר: לוחצים <b>"להעתיק קוד"</b> כאן, ובמקום החדש מדביקים אותו ולוחצים <b>"לטעון"</b>.</p>
+        <div class="row-btns" style="justify-content:flex-start">
+          <button class="soft-btn" data-export>📋 להעתיק קוד התקדמות</button>
+          <button class="soft-btn" data-download>💾 לשמור כקובץ</button>
+        </div>
+        <textarea class="transfer-code" data-code rows="3" placeholder="כאן מופיע הקוד, או מדביקים קוד מהמקום הישן"></textarea>
+        <div class="row-btns" style="justify-content:flex-start">
+          <button class="soft-btn" data-import>📥 לטעון את הקוד</button>
+          <label class="soft-btn file-btn">📂 לטעון מקובץ<input type="file" accept=".txt,.json" data-file hidden></label>
+        </div>
+        <p class="small-note" data-transfer-msg></p>
+      </div>
       <div class="panel">
         <h3>גיבורים שהוספתם</h3>
         ${(state.custom || []).length ? (state.custom || []).map((c) => `<div class="custom-row">${heroFaceSVG(c.id, 44)}<b>${HEROES[c.id].title}</b><button class="soft-btn small" data-del-hero="${c.id}">🗑️ למחוק</button></div>`).join("") : "<p>עוד לא הוספתם גיבורים. אפשר להוסיף במסך הפתיחה, בכרטיס ➕ גיבור חדש.</p>"}
@@ -699,6 +713,40 @@ function showParents() {
       <button class="go-btn" data-back>חזרה למשחק</button>
     </section>`;
   on("[data-back]", "click", showHome);
+  // ---- progress transfer ----
+  const codeBox = app.querySelector("[data-code]");
+  const msg = (t) => { app.querySelector("[data-transfer-msg]").textContent = t; };
+  const makeCode = () => "CITYHEROES:" + btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+  on("[data-export]", "click", async () => {
+    const code = makeCode();
+    codeBox.value = code;
+    codeBox.select();
+    try { await navigator.clipboard.writeText(code); msg("✔️ הקוד הועתק. עכשיו פותחים את המשחק בכתובת החדשה, נכנסים לפינת ההורים, מדביקים ולוחצים \"לטעון\"."); }
+    catch (e) { msg("הקוד מופיע בתיבה. מסמנים אותו, מעתיקים (Ctrl+C) ומדביקים במקום החדש."); }
+  });
+  on("[data-download]", "click", () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([makeCode()], { type: "text/plain" }));
+    a.download = "city-heroes-progress.txt";
+    a.click();
+    msg("✔️ הקובץ נשמר (city-heroes-progress.txt). במקום החדש לוחצים \"לטעון מקובץ\".");
+  });
+  const loadCode = (text) => {
+    try {
+      const raw = String(text).trim().replace(/^CITYHEROES:/, "");
+      const data = JSON.parse(decodeURIComponent(escape(atob(raw))));
+      if (!data || !data.players) throw new Error("bad");
+      if (!confirm("לטעון את ההתקדמות מהקוד? מה ששמור כרגע במכשיר הזה יוחלף.")) return;
+      localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      state = load();
+      state.settings = state.settings || {};
+      Sfx.win();
+      alert("✔️ ההתקדמות נטענה!");
+      showHome();
+    } catch (e) { msg("❌ הקוד לא תקין. כדאי להעתיק אותו שוב, בשלמותו."); }
+  };
+  on("[data-import]", "click", () => loadCode(codeBox.value));
+  on("[data-file]", "change", (e) => { const file = e.target.files[0]; if (file) file.text().then(loadCode); });
   on("[data-add-hero2]", "click", showHeroMaker);
   app.querySelectorAll("[data-del-hero]").forEach((b) => b.addEventListener("click", () => {
     const id = b.dataset.delHero;
