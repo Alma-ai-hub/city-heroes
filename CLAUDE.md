@@ -1,5 +1,7 @@
 # The City Heroes (גיבורי העיר)
 
+Live at **https://thecityheroes.com** (GoDaddy domain, DNS: 4 A records to GitHub Pages + www CNAME; `CNAME` file in the repo; https enforced; the old github.io address redirects).
+
 Renamed 2026-11-17 to **The City Heroes** (Liora bought thecityheroes.com): English comic logo (Bangers font), page title and app name.
 
 Liora's side project (started 2026-11-09): a learning game for **Bar and Yarden, two boys
@@ -48,4 +50,4 @@ Liora is a beginner with no programming experience: explain simply, in Hebrew.
   of the ink is outside.
 - Words with syllable count `s` (0 = skip; words ending in patach ganuv are skipped).
 - Math is shown left-to-right. Numbers use Rubik (Karantina digits are hard to read).
-- **Published 2026-11-09** (Liora approved a public repo, names Bar/Yarden kept): https://github.com/Alma-ai-hub/city-heroes, live at https://alma-ai-hub.github.io/city-heroes/ (GitHub Pages from `main`, root). Pushing to `main` updates the site in ~1 min. `gh` is at `C:\Program Files\GitHub CLI\gh.exe`. Commits use the GitHub noreply email (repo-local git config). Progress is per device/browser (localStorage). Commit and push after each working step.
+- **Published 2026-11-09** (Liora approved a public repo, names Bar/Yarden kept): https://github.com/Alma-ai-hub/city-heroes, live at https://thecityheroes.com (GitHub Pages from `main`, root). Pushing to `main` updates the site in ~1 min. `gh` is at `C:\Program Files\GitHub CLI\gh.exe`. Commits use the GitHub noreply email (repo-local git config). Progress is per device/browser (localStorage). Commit and push after each working step.
