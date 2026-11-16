@@ -230,7 +230,9 @@ function baseSVG(parts, hero, powers = []) {
   const u = "b" + ++artId;
   const has = (id) => parts.includes(id);
   const fire = h.power === "fire";
-  const part = (id, inner) => `<g class="base-part ${has(id) ? "built" : "ghost-part"}">${inner}</g>`;
+  // Built parts in full color; only the next part to earn shows as a dotted outline.
+  const nextPart = (BASE_PARTS.find((b) => !parts.includes(b.id)) || {}).id;
+  const part = (id, inner) => (has(id) ? `<g class="base-part built">${inner}</g>` : id === nextPart ? `<g class="base-part ghost-part next-part">${inner}</g>` : "");
   const S = `stroke="${INK}" stroke-width="4" stroke-linejoin="round"`;
   const P = h.power;
   const day = ["smash", "ice", "nature", "water", "wind"].includes(P);

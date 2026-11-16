@@ -665,8 +665,6 @@ function realmSVG(realmId, player, openAll) {
 }
 
 // ===================== One neighborhood's own screen =====================
-const HOOD_SPOTS = [[1320, 790], [950, 815], [580, 740], [300, 480], [720, 290]];
-const hoodSpots = (n) => (n >= 5 ? HOOD_SPOTS : n === 3 ? [HOOD_SPOTS[0], HOOD_SPOTS[2], HOOD_SPOTS[4]] : HOOD_SPOTS.slice(0, n));
 const HOOD_THEMES = {
   town: { ground: "#86efac", patch: "#4ade80", deco: () => `${house(1150, 330, "#fef3c7", "#f59e0b")}${house(1260, 300, "#fecaca", "#b91c1c")}${house(1370, 340, "#e0f2fe", "#2563eb")}${house(1480, 310, "#ede9fe", "#7c3aed")}${tree(1100, 470)}${tree(1500, 480, .9)}${tree(120, 860)}${tree(220, 920, .8)}${house(860, 520, "#dcfce7", "#15803d")}
       <g font-family="Arial" font-weight="900" font-size="46" fill="#fff" stroke="${INK}" stroke-width="3" class="floaty"><text x="1180" y="180">א</text><text x="1300" y="150">ב</text><text x="1420" y="190">ג</text><text x="160" y="200">ד</text><text x="300" y="150">ה</text></g>` },
@@ -697,51 +695,6 @@ const HOOD_THEMES = {
       <path d="M1100 1000 Q1250 760 1600 800 V1000Z" fill="#f0f9ff" ${K}/>` },
 };
 
-function hoodSVG(hoodId, player) {
-  const h = NEIGHBORHOODS.find((x) => x.id === hoodId);
-  const t = HOOD_THEMES[h.theme] || HOOD_THEMES.town;
-  const spots = hoodSpots(h.zones.length);
-  const road = smoothPath([[1680, 880], ...spots]);
-  const places = h.zones.map((zid, i) => {
-    const z = ZONES.find((x) => x.id === zid);
-    const [x, y] = spots[i];
-    const n = player.zones[zid] || 0;
-    return `
-      <g class="spot" data-zone="${zid}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${z.title}">
-        <ellipse cx="0" cy="60" rx="130" ry="22" fill="#0003"/>
-        <g class="spot-art" transform="scale(1.15)">${PLACE_ART[zid]()}</g>
-        <g transform="translate(0 112)">
-          <rect x="-128" y="-26" width="256" height="52" rx="14" fill="${INK}" transform="translate(5 5)"/>
-          <rect x="-128" y="-26" width="256" height="52" rx="14" fill="#fff" stroke="${INK}" stroke-width="4"/>
-          <rect x="-128" y="-26" width="18" height="52" rx="6" fill="${z.color}" stroke="${INK}" stroke-width="4"/>
-          <text x="9" y="12" text-anchor="middle" class="spot-label big">${z.title}</text>
-        </g>
-        <g transform="translate(118 -112)">
-          <circle r="28" fill="${n ? "#facc15" : "#fff"}" stroke="${INK}" stroke-width="4"/>
-          <text y="10" text-anchor="middle" class="spot-count">${n ? "⭐" + n : i + 1}</text>
-        </g>
-      </g>`;
-  }).join("");
-  return `
-  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg hood-svg" role="img" aria-label="${h.title}">
-    <defs><pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
-      <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
-      <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <pattern id="tex" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="${t.tex || "#166534"}" stroke-width="2.2" fill="none" opacity=".4"/></pattern></defs>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="${t.ground}"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#tex)"/>
-    <g fill="${t.patch}" opacity=".7"><ellipse cx="300" cy="200" rx="280" ry="120"/><ellipse cx="900" cy="560" rx="260" ry="90"/><ellipse cx="1300" cy="900" rx="320" ry="100"/></g>
-    ${t.deco()}
-    <path d="${road}" fill="none" stroke="${INK}" stroke-width="64" stroke-linecap="round"/>
-    <path d="${road}" fill="none" stroke="#fcd9a8" stroke-width="54" stroke-linecap="round"/>
-    <path d="${road}" id="road" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="22 20"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sunlight)" pointer-events="none"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#vignette)" pointer-events="none"/>
-    ${places}
-    ${tokenHTML()}
-  </svg>`;
-}
 
 // ---------- the walking hero ----------
 // Where along the road each target point is (found once per drawn map).
@@ -855,10 +808,71 @@ const PLACE_PICS = {
   ensea: ["🐙", "🐋", "🦀"], enweather: ["🌦️", "🌈", "❄️"], enfruits: ["🍍", "🍒", "🍋"], envehicles: ["🚗", "🚌", "🚲"], enclothes: ["👕", "👗", "🧦"],
   enbugs: ["🐞", "🦋", "🐝"], enfeelings: ["😀", "😢", "😴"], ensizes: ["🐘", "🐭", "📏"], enyesno: ["👍", "👎", "❓"], encolorshape: ["🔺", "🟦", "🟡"],
 };
-for (const [id, [a, b, c]] of Object.entries(PLACE_PICS)) {
-  const z = ZONES.find((x) => x.id === id);
-  PLACE_ART[id] = () => `
-    <ellipse cx="0" cy="34" rx="120" ry="34" fill="${shade(z.color, -0.3)}" ${K}/>
-    <ellipse cx="0" cy="26" rx="120" ry="34" fill="${shade(z.color, 0.35)}" ${K}/>
-    ${emo(a, 0, -40, 120)}${emo(b, -100, 10, 58, "bob")}${emo(c, 100, 4, 54)}`;
+
+// ===================== Neighborhood screens, in the same style as the big maps (2026-11-16) =====================
+// Every place: a raised platform with three big pictures and a ribbon (same look everywhere).
+Object.assign(PLACE_PICS, {
+  letters: ["📚", "✏️", "🔤"], circus: ["🎪", "🎈", "🤹"], reading: ["🪧", "📖", "🌳"], bakery: ["🎂", "🧁", "🍪"], writing: ["✏️", "📝", "🖍️"],
+  treasure: ["🏝️", "💰", "🗺️"], zoo: ["🦁", "🦒", "🐘"], numbers: ["🤖", "🌉", "🔢"], underwater: ["🐠", "🐚", "🫧"], market: ["🍉", "🧺", "🍎"],
+  music: ["🥁", "🎵", "🎺"], lab: ["🧪", "🔬", "⚗️"], forest: ["🌳", "🍄", "🦉"], fire: ["🚒", "🔥", "🧯"], train: ["🚂", "🎫", "🚉"],
+  stadium: ["🏟️", "⚽", "🏆"], dragon: ["🐉", "💎", "🏔️"], studio: ["🎨", "🖌️", "🖼️"], space: ["🚀", "🪐", "⭐"], ice: ["⛄", "❄️", "🧊"],
+  monster: ["👾", "🍪", "🍩"], maze: ["🧭", "🐾", "🏁"], farm: ["🚜", "🐄", "🌾"], post: ["📮", "✉️", "📦"], lunapark: ["🎡", "🎠", "🎢"],
+  shapes: ["🔷", "🔺", "⭕"], giants: ["📏", "🐘", "🐭"], magic: ["🧙", "✨", "🪄"], fishing: ["🎣", "🐟", "🚣"], meteors: ["☄️", "🌠", "🪐"],
+  enfood: ["🍎", "🍕", "🍔"], enanimals: ["🐶", "🐄", "🐷"], encolors: ["🎨", "🌈", "🖍️"], ennumbers: ["🔟", "🧮", "🎲"], enabc: ["🔤", "🅰️", "🅱️"], enbody: ["🧍", "✋", "👃"],
+});
+const placePics = (id) => {
+  const [a, b, c] = PLACE_PICS[id] || ["⭐", "✨", "🎈"];
+  return `${emo(a, 0, -50, 120)}${emo(b, -105, 4, 58, "bob")}${emo(c, 105, 0, 54)}`;
+};
+
+// Ground colors and scenery for each kind of neighborhood.
+const HOOD_LOOK = {
+  town:     { g: ["#d9f99d", "#84cc16", "#4d7c0f"], deco: ["🏡", "🏠", "🌳", "📚", "🏘️", "🌻", "🌳", "🏡", "🌷", "🐈", "🌳", "🚲"] },
+  woods:    { g: ["#86efac", "#16a34a", "#14532d"], deco: ["🌲", "🌲", "🍄", "🦉", "🌳", "🦊", "🌲", "🦌", "🍄", "🌲", "🐿️", "🌳"] },
+  bay:      { g: ["#a5f3fc", "#22d3ee", "#0e7490"], deco: ["🐚", "⛵", "🐠", "🌴", "🦀", "🐬", "⛵", "🌊", "🐙", "🏝️", "🐟", "🌴"] },
+  harbor:   { g: ["#fef3c7", "#fcd34d", "#b45309"], deco: ["⚓", "⛵", "🛳️", "🦀", "🌴", "🐚", "🏝️", "🐟", "🚢", "🪝", "🌴", "🐬"] },
+  downtown: { g: ["#e2e8f0", "#94a3b8", "#475569"], deco: ["🏢", "🏙️", "🏬", "🚕", "🚦", "🏢", "🚌", "🌳", "🏬", "🚓", "🏙️", "🚲"] },
+  edge:     { g: ["#c7d2fe", "#6366f1", "#1e1b4b"], deco: ["🪐", "⭐", "🌙", "🛰️", "☄️", "❄️", "🌟", "👽", "⭐", "🌠", "🪐", "❄️"] },
+  toys:     { g: ["#fed7aa", "#fb923c", "#c2410c"], deco: ["🎁", "🧸", "🪀", "🎲", "🚂", "🎈", "🪁", "🧩", "🎁", "🦕", "🎈", "🧸"] },
+  stories:  { g: ["#fef9c3", "#fde047", "#a16207"], deco: ["📚", "🏰", "🦉", "📖", "🌳", "🎭", "✨", "🐉", "📕", "🌳", "🧚", "✨"] },
+  en:       { g: ["#fbcfe8", "#f472b6", "#9d174d"], deco: ["🏠", "🍎", "🐶", "🚌", "🌳", "👋", "🎈", "🍕", "🌳", "🐱", "🎈", "🚕"] },
+  fun:      { g: ["#fde68a", "#fb923c", "#be123c"], deco: ["🎪", "🎈", "🍭", "🎢", "🍦", "🎠", "🎈", "🧸", "🍿", "🎡", "🎈", "🍭"] },
+  beach:    { g: ["#fef3c7", "#fcd34d", "#d97706"], deco: ["🏖️", "🌴", "⛵", "🐚", "🦀", "☀️", "🌴", "🐬", "🏄", "⛱️", "🐙", "🌴"] },
+  garden:   { g: ["#dcfce7", "#4ade80", "#166534"], deco: ["🌈", "🌷", "🌻", "🦋", "🐞", "🌸", "🐝", "🍄", "🌼", "🌷", "🦋", "🌳"] },
+};
+const DECO_SLOTS = [[1150, 170, 90], [1360, 230, 80], [1520, 140, 70], [1120, 440, 64], [1500, 470, 76], [170, 150, 80],
+  [360, 170, 60], [140, 820, 84], [270, 920, 60], [1560, 680, 64], [620, 520, 56], [1050, 600, 52]];
+const HOOD_SPOTS2 = [[1290, 780], [900, 820], [500, 770], [330, 450], [760, 290]];
+const hoodSpots = (n) => (n >= 5 ? HOOD_SPOTS2 : n === 3 ? [HOOD_SPOTS2[0], HOOD_SPOTS2[2], HOOD_SPOTS2[4]] : HOOD_SPOTS2.slice(0, n));
+
+function hoodSVG(hoodId, player) {
+  const h = NEIGHBORHOODS.find((x) => x.id === hoodId);
+  const look = HOOD_LOOK[h.theme] || HOOD_LOOK.town;
+  const spots = hoodSpots(h.zones.length);
+  const places = h.zones.map((zid, i) => {
+    const z = ZONES.find((x) => x.id === zid);
+    const n = player.zones[zid] || 0;
+    return districtHTML({ id: zid, kind: "zone", x: spots[i][0], y: spots[i][1], title: z.title, color: z.color,
+      art: placePics(zid), open: true, count: n ? `⭐ ${n}` : `${i + 1}`, rx: 150, ry: 66 });
+  }).join("");
+  const deco = DECO_SLOTS.map(([x, y, s], i) => emo(look.deco[i % look.deco.length], x, y, s, i % 4 === 1 ? "bob" : "")).join("");
+  return `
+  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg hood-svg wow" role="img" aria-label="${h.title}">
+    <defs>${MAP_DEFS}
+      <radialGradient id="hoodGround" cx=".5" cy=".45" r=".8">${look.g.map((c, i) => `<stop offset="${i / 2}" stop-color="${c}"/>`).join("")}</radialGradient>
+    </defs>
+    <rect width="1600" height="1000" fill="url(#hoodGround)"/>
+    <rect width="1600" height="1000" fill="url(#grass2)"/>
+    <g fill="#fff" opacity=".18"><ellipse cx="420" cy="260" rx="320" ry="120"/><ellipse cx="1150" cy="620" rx="300" ry="100"/><ellipse cx="900" cy="140" rx="260" ry="70"/></g>
+    <rect width="1600" height="1000" fill="url(#landLight)"/>
+    ${deco}
+    ${sky()}
+    ${glowingRoad([[1680, 900], ...spots])}
+    ${places}
+    <g transform="translate(1520 935)">${ribbonHTML("🚩 כניסה", "#16a34a", 170, -28)}</g>
+    <rect width="1600" height="1000" fill="url(#vignette)" pointer-events="none"/>
+    ${tokenHTML()}
+  </svg>`;
 }
+
+for (const id of Object.keys(PLACE_PICS)) PLACE_ART[id] = PLACE_ART[id] && !PLACE_PICS[id] ? PLACE_ART[id] : () => placePics(id);

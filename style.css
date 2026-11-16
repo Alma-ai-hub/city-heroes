@@ -1071,3 +1071,15 @@ button, .spot, .region, .maze-cell, .balloon, .fish, .meteor { touch-action: man
 
 .measure .dino { font-size: 100px; display: inline-block; transform: scaleX(var(--sx)); transform-origin: left center; max-width: none; line-height: 1; margin-bottom: 4px; }
 .en-ear b { direction: ltr; unicode-bidi: isolate; }
+
+/* parents corner, tidy (2026-11-16) */
+.progress-table th { font-size: 16px; }
+.progress-table td { font-size: 16px; min-width: 120px; }
+.progress-table .bar { height: 12px; background: #e2e8f0; border: 2px solid #111; border-radius: 6px; overflow: hidden; margin: 0 auto 2px; width: 100px; }
+.progress-table .bar i { display: block; height: 100%; }
+.realm-details { background: #f8fafc; border: 3px solid #111; border-radius: 12px; padding: 6px 14px; margin: 8px 0; }
+.realm-details summary { font-weight: 900; font-size: 20px; cursor: pointer; }
+.realm-details h4 { margin: 10px 0 2px; }
+.realm-details ul { margin: 0; font-size: 16px; }
+
+.base-part.next-part { animation: twinkle 1.8s ease-in-out infinite; }

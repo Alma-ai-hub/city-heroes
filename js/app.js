@@ -280,7 +280,7 @@ function showHood(hoodId, greet) {
   const here = h.zones.includes(mp().at) ? mp().at : "_start";
   putToken(svg, roadLengths(svg, pts)[here]);
   let busy = false;
-  svg.querySelectorAll(".spot").forEach((s) => {
+  svg.querySelectorAll(".district[data-zone]").forEach((s) => {
     const go = () => {
       if (busy) return;
       busy = true;
@@ -654,20 +654,25 @@ function showParents() {
     <section class="parents comic-panel">
       <h2 class="comic-title">👨‍👩‍👦 פינת ההורים</h2>
       <div class="panel">
-        <h3>מה מתרגלים בכל מקום בעיר</h3>
-        <ul>${ZONES.map((z) => `<li>${z.icon} <b>${z.title}</b>: ${z.teaches}</li>`).join("")}</ul>
-        <p>כל משימה היא 5 אתגרים קצרים. אחרי כל 3 משימות באותו מקום, השלב עולה (עד שלב 3). טעות לא מורידה כלום, רק משפיעה על מספר הכוכבים. אחרי 2 טעויות, התשובה הנכונה מהבהבת.</p>
-      </div>
-      <div class="panel">
-        <h3>ההתקדמות (מספר משימות בכל מקום)</h3>
-        <div class="table-wrap"><table>
-          <tr><th></th>${ZONES.map((z) => `<th title="${z.title}">${z.icon}</th>`).join("")}<th>⭐</th><th></th></tr>
+        <h3>ההתקדמות</h3>
+        <p class="small-note">בכל ממלכה: כמה עולמות שוחקו מתוך 20, והאם השליט נוצח 👑.</p>
+        <div class="table-wrap"><table class="progress-table">
+          <tr><th></th>${REALMS.map((r) => `<th>${r.icon} ${r.title}</th>`).join("")}<th>🏰 ד״ר בלגן</th><th>⭐</th><th></th></tr>
           ${Object.keys(HEROES).map((id) => {
             const p = state.players[id];
-            return `<tr><td><b>${HEROES[id].name}</b></td>${ZONES.map((z) => `<td>${p.zones[z.id] || 0}</td>`).join("")}<td>${p.stars}</td>
+            const cell = (r) => { const zs = realmZones(r.id); const n = zs.filter((z) => p.zones[z]).length; return `<td><div class="bar"><i style="width:${(n / zs.length) * 100}%;background:${r.color}"></i></div>${n}/${zs.length} ${p.zones[r.ruler] ? "👑" : ""}</td>`; };
+            return `<tr><td><b>${HEROES[id].name}</b></td>${REALMS.map(cell).join("")}<td>${p.zones.fortress ? "🏅 × " + p.zones.fortress : "—"}</td><td>${p.stars}</td>
               <td><button class="soft-btn small" data-reset="${id}">איפוס</button></td></tr>`;
           }).join("")}
         </table></div>
+      </div>
+      <div class="panel">
+        <h3>מה מתרגלים בכל ממלכה</h3>
+        <p>כל משימה היא 5 אתגרים קצרים. אחרי כל 3 משימות באותו עולם, השלב עולה (עד שלב 3). טעות לא מורידה כלום, רק משפיעה על מספר הכוכבים. אחרי 2 טעויות, התשובה הנכונה מהבהבת. לחצו על ממלכה כדי לראות את העולמות שלה.</p>
+        ${REALMS.map((r) => `<details class="realm-details"><summary>${r.icon} ${r.title}</summary>
+          ${r.hoods.map((hid) => { const h = NEIGHBORHOODS.find((x) => x.id === hid); return `<h4>${h.icon} ${h.title}</h4><ul>${h.zones.map((zid) => { const z = ZONES.find((x) => x.id === zid); return `<li>${z.icon} <b>${z.title}</b>: ${z.teaches}</li>`; }).join("")}</ul>`; }).join("")}
+          <p>👑 <b>${ZONES.find((z) => z.id === r.ruler).title}</b>: ${ZONES.find((z) => z.id === r.ruler).teaches}</p></details>`).join("")}
+        <p>🏰 <b>המבצר של ד״ר בלגן</b>: נפתח אחרי ששלושת השליטים נוצחו. קרב סיום מכל הממלכות, מדליה ותעודה.</p>
       </div>
       <div class="panel">
         <h3>גיבורים שהוספתם</h3>
