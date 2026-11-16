@@ -224,7 +224,7 @@ function showMap(greet) {
   const pts = cityPoints();
   const here = worldSpotOf(mp().at);
   putToken(svg, roadLengths(svg, pts)[here]);
-  wireMap(svg, pts, here, ".region", "realm", (id) => {
+  wireMap(svg, pts, here, ".district[data-realm]", "realm", (id) => {
     if (id === "fortress") { setAt("fortress"); startMission("fortress"); }
     else showRealm(id, true);
   }, () => ["הַמִּבְצָר עוֹד נָעוּל. כְּדֵי לִפְתֹּחַ אוֹתוֹ, צָרִיךְ לְנַצֵּחַ אֶת שְׁלוֹשֶׁת הַשַּׁלִּיטִים"]);
@@ -251,11 +251,11 @@ function showRealm(realmId, greet) {
   const h = hoodOfZone(at);
   const here = at === realm.ruler ? realm.ruler : h && realm.hoods.includes(h.id) ? h.id : "_start";
   putToken(svg, roadLengths(svg, pts)[here]);
-  wireMap(svg, pts, here, ".region[data-hood]", "hood", (id) => showHood(id, true), (id) => {
+  wireMap(svg, pts, here, ".district[data-hood]", "hood", (id) => showHood(id, true), (id) => {
     const i = realm.hoods.indexOf(id);
     return ["הַשְּׁכוּנָה הַזֹּאת עוֹד נְעוּלָה. כְּדֵי לִפְתֹּחַ אוֹתָהּ, בַּקֵּר בְּכׇל הָעוֹלָמוֹת בַּשְּׁכוּנָה", NEIGHBORHOODS.find((n) => n.id === realm.hoods[i - 1]).spoken];
   });
-  wireMap(svg, pts, here, ".region[data-ruler]", "ruler", (id) => { setAt(id); startMission(id); },
+  wireMap(svg, pts, here, ".district[data-ruler]", "ruler", (id) => { setAt(id); startMission(id); },
     () => ["הַשַּׁלִּיט עוֹד נָעוּל. כְּדֵי לְהִלָּחֵם בּוֹ, בַּקֵּר בְּכׇל הָעוֹלָמוֹת שֶׁל הַמַּמְלָכָה"]);
   if (greet) Voice.say(["בָּרוּךְ הַבָּא!", realm.spoken]);
 }

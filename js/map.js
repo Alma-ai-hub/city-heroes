@@ -358,8 +358,8 @@ Object.assign(PLACE_ART, {
 
 // ===================== The city map: three kingdoms + Dr. Balagan's fortress =====================
 const WORLD_W = 1600, WORLD_H = 1000;
-const REALM_AT = { lang: [1230, 640], en: [810, 800], math: [390, 640] };
-const FORTRESS_SPOT = [810, 170];
+const REALM_AT = { lang: [1210, 560], en: [800, 790], math: [390, 560] };
+const FORTRESS_SPOT = [800, 210];
 const ISLAND = "M120 140 Q80 40 300 50 Q600 -10 900 40 Q1250 10 1450 80 Q1580 150 1540 420 Q1600 700 1500 880 Q1300 990 900 960 Q500 990 220 930 Q40 860 70 600 Q30 330 120 140Z";
 
 function hoodArt(id) {
@@ -436,119 +436,228 @@ function tokenHTML() {
     </g>`;
 }
 
-// A big clickable area on a map (a kingdom, a neighborhood, a ruler's castle).
-function regionHTML({ id, x, y, title, color, art, open, count, crown, kind = "hood" }) {
+// ---------- shared pieces of the big maps (2026-11-16: "game graphics, not kids' drawings") ----------
+// Emoji are drawn big: on Windows, iPad and Android they are detailed 3D-style pictures.
+const emo = (e, x, y, size, cls = "") => `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central" class="emo ${cls}">${e}</text>`;
+
+// A raised round platform with thickness, a soft shadow and light from above.
+function plateHTML(rx, ry, color, uid) {
   return `
-    <g class="region ${open ? "" : "locked"}" data-${kind}="${id}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${title}">
-      <ellipse cx="0" cy="30" rx="190" ry="120" fill="${color}" opacity=".35"/>
-      <ellipse cx="0" cy="20" rx="175" ry="108" fill="#fff8" stroke="${INK}" stroke-width="5" stroke-dasharray="14 10"/>
-      <g class="region-art">${art}</g>
-      ${open ? "" : `<g class="lock"><ellipse cx="0" cy="20" rx="178" ry="110" fill="#1e1b4b99"/><text y="44" text-anchor="middle" font-size="76">🔒</text></g>`}
-      <g transform="translate(0 112)">
-        <rect x="-160" y="-30" width="320" height="60" rx="16" fill="${INK}" transform="translate(6 6)"/>
-        <rect x="-160" y="-30" width="320" height="60" rx="16" fill="${color}" stroke="${INK}" stroke-width="5"/>
-        <text x="0" y="14" text-anchor="middle" class="region-label">${title}</text>
-      </g>
-      ${count ? `<g transform="translate(150 -80)"><rect x="-62" y="-22" width="124" height="44" rx="22" fill="#fff" stroke="${INK}" stroke-width="4"/><text y="9" text-anchor="middle" class="region-count">${count}</text></g>` : ""}
-      ${crown ? `<text x="-150" y="-60" font-size="54" class="floaty">👑</text>` : ""}
+    <defs><radialGradient id="pl${uid}" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="${shade(color, 0.55)}"/><stop offset=".6" stop-color="${shade(color, 0.15)}"/><stop offset="1" stop-color="${shade(color, -0.15)}"/></radialGradient></defs>
+    <ellipse cx="6" cy="${ry * 0.55}" rx="${rx * 1.02}" ry="${ry * 0.95}" fill="#0005" filter="url(#softBlur)"/>
+    <ellipse cx="0" cy="22" rx="${rx}" ry="${ry}" fill="${shade(color, -0.45)}" stroke="#111" stroke-width="5"/>
+    <ellipse cx="0" cy="0" rx="${rx}" ry="${ry}" fill="url(#pl${uid})" stroke="#111" stroke-width="5"/>
+    <ellipse cx="0" cy="0" rx="${rx - 14}" ry="${ry - 10}" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/>`;
+}
+
+// A gold-edged ribbon with a name on it.
+function ribbonHTML(text, color, w = 330, y = 0) {
+  const h = 56, x = -w / 2;
+  return `<g transform="translate(0 ${y})">
+    <path d="M${x - 34} ${8} L${x} ${2} L${x} ${h + 2} L${x - 34} ${h + 8} L${x - 18} ${h / 2 + 6}Z" fill="${shade(color, -0.35)}" stroke="#111" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M${-x + 34} ${8} L${-x} ${2} L${-x} ${h + 2} L${-x + 34} ${h + 8} L${-x + 18} ${h / 2 + 6}Z" fill="${shade(color, -0.35)}" stroke="#111" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="${x}" y="0" width="${w}" height="${h}" rx="10" fill="${color}" stroke="#111" stroke-width="5"/>
+    <rect x="${x + 6}" y="6" width="${w - 12}" height="${h - 12}" rx="7" fill="none" stroke="#fde68a" stroke-width="3"/>
+    <rect x="${x + 8}" y="8" width="${w - 16}" height="${h / 2 - 8}" rx="6" fill="#fff" opacity=".22"/>
+    <text x="0" y="${h / 2 + 2}" text-anchor="middle" dominant-baseline="central" class="ribbon-text">${text}</text>
+  </g>`;
+}
+
+let plateUid = 0;
+// A place on a big map: platform, landmarks, ribbon, progress badge, lock.
+function districtHTML({ id, kind, x, y, title, color, art, open, count, crown, rx = 220, ry = 110 }) {
+  const u = ++plateUid;
+  return `
+    <g class="district ${open ? "" : "locked"}" data-${kind}="${id}" transform="translate(${x} ${y})" tabindex="0" role="button" aria-label="${title}">
+      <ellipse cx="0" cy="0" rx="${rx + 40}" ry="${ry + 40}" fill="url(#glow${kind === "ruler" ? "Gold" : ""})" class="district-glow"/>
+      ${plateHTML(rx, ry, color, u)}
+      <g class="district-art">${art}</g>
+      ${open ? "" : `<g class="lock"><ellipse cx="0" cy="0" rx="${rx}" ry="${ry}" fill="#0f172acc" stroke="#111" stroke-width="5"/>${emo("🔒", 0, -10, 84)}</g>`}
+      ${ribbonHTML(title, color, Math.max(280, title.length * 17), ry + 6)}
+      ${count ? `<g transform="translate(${rx - 30} ${-ry - 10})"><rect x="-64" y="-24" width="128" height="48" rx="24" fill="#fff" stroke="#111" stroke-width="4"/><text y="2" text-anchor="middle" dominant-baseline="central" class="region-count">${count}</text></g>` : ""}
+      ${crown ? emo("👑", -rx + 20, -ry - 10, 64, "bob") : ""}
     </g>`;
 }
 
-function mapFrame(inner, extraDefs = "") {
-  return `
-  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg world-svg" role="img">
-    <defs>
-      <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.2" fill="#000" opacity=".08"/></pattern>
-      <pattern id="grass" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M8 20 l3 -9 l3 9 M38 46 l3 -9 l3 9 M30 12 l2 -6 l2 6 M50 30 l2 -6 l2 6 M14 50 l2 -6 l2 6" stroke="#166534" stroke-width="2.2" fill="none" opacity=".45"/></pattern>
-      <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
-      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0369a1"/></linearGradient>
-      <linearGradient id="sunlight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <clipPath id="islandClip"><path d="${ISLAND}"/></clipPath>
-      ${extraDefs}
-    </defs>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sea)"/>
-    ${Array.from({ length: 24 }, (_, i) => `<path d="M${(i * 173) % 1560} ${(i * 97) % 980} q14 -10 28 0 t28 0" stroke="#e0f2fe" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>`).join("")}
-    <path d="${ISLAND}" fill="#86efac" stroke="${INK}" stroke-width="7"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#grass)" clip-path="url(#islandClip)"/>
-    <path d="${ISLAND}" fill="none" stroke="#fde68a" stroke-width="22" opacity=".8" transform="translate(0 6)"/>
-    <path d="${ISLAND}" fill="none" stroke="${INK}" stroke-width="7"/>
-    ${inner}
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#sunlight)" pointer-events="none"/>
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#vignette)" pointer-events="none"/>
-    ${tokenHTML()}
-  </svg>`;
-}
-function roadHTML(pts, w = 44) {
+function glowingRoad(pts) {
   const d = smoothPath(pts);
-  return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round"/>
-    <path d="${d}" fill="none" stroke="#fcd9a8" stroke-width="${w - 10}" stroke-linecap="round"/>
-    <path d="${d}" id="road" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="18 16"/>`;
+  return `<path d="${d}" fill="none" stroke="#0007" stroke-width="58" stroke-linecap="round" transform="translate(4 8)" filter="url(#softBlur)"/>
+    <path d="${d}" fill="none" stroke="#111" stroke-width="50" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="url(#roadGrad)" stroke-width="40" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="#fff7" stroke-width="10" stroke-linecap="round" transform="translate(-3 -6)"/>
+    <path d="${d}" id="road" fill="none" stroke="#fde047" stroke-width="5" stroke-dasharray="14 18" class="road-dash"/>`;
 }
+
+const MAP_DEFS = `
+  <filter id="softBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="10"/></filter>
+  <radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="glowGold"><stop offset="0" stop-color="#fde047" stop-opacity=".75"/><stop offset="1" stop-color="#fde047" stop-opacity="0"/></radialGradient>
+  <linearGradient id="roadGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef3c7"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+  <radialGradient id="seaGrad" cx=".5" cy=".45" r=".75"><stop offset="0" stop-color="#22d3ee"/><stop offset=".55" stop-color="#0284c7"/><stop offset="1" stop-color="#082f49"/></radialGradient>
+  <radialGradient id="landLight" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></radialGradient>
+  <radialGradient id="vignette" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+  <pattern id="waves" width="120" height="60" patternUnits="userSpaceOnUse"><path d="M10 30 q15 -12 30 0 t30 0" stroke="#e0f2fe" stroke-width="3" fill="none" opacity=".35"/><path d="M70 50 q10 -8 20 0" stroke="#fff" stroke-width="2" fill="none" opacity=".25"/></pattern>
+  <pattern id="grass2" width="70" height="70" patternUnits="userSpaceOnUse"><path d="M10 24 l3 -10 l3 10 M45 52 l3 -10 l3 10 M34 14 l2 -7 l2 7 M58 32 l2 -7 l2 7 M18 58 l2 -7 l2 7" stroke="#14532d" stroke-width="2" fill="none" opacity=".35"/></pattern>`;
+
+const ISLAND2 = "M150 150 Q140 70 330 80 Q560 40 800 70 Q1060 40 1290 80 Q1470 90 1470 240 Q1520 420 1480 620 Q1500 860 1290 910 Q1040 950 800 930 Q540 955 320 915 Q120 880 120 660 Q90 420 150 150Z";
+
+function seaAndIsland(groundGrad) {
+  return `
+    <rect width="1600" height="1000" fill="url(#seaGrad)"/>
+    <rect width="1600" height="1000" fill="url(#waves)" class="sea-waves"/>
+    <path d="${ISLAND2}" fill="#fde68a" stroke="#fff" stroke-width="40" stroke-linejoin="round" opacity=".55" transform="translate(800 500) scale(1.035) translate(-800 -500)"/>
+    <path d="${ISLAND2}" fill="#fcd34d" stroke="#111" stroke-width="7"/>
+    <path d="${ISLAND2}" fill="${groundGrad}" transform="translate(800 500) scale(.975) translate(-800 -500)"/>
+    <path d="${ISLAND2}" fill="url(#grass2)" transform="translate(800 500) scale(.975) translate(-800 -500)"/>
+    <path d="${ISLAND2}" fill="url(#landLight)" transform="translate(800 500) scale(.975) translate(-800 -500)"/>`;
+}
+const seaLife = () => `
+  <g class="sail">${emo("⛵", 70, 230, 56)}</g><g class="sail s2">${emo("🚤", 1540, 760, 46)}</g>
+  <g class="sail s3">${emo("⛵", 1530, 160, 48)}</g>${emo("🐬", 60, 860, 50, "jump")}${emo("🐋", 1550, 500, 54, "bob")}`;
+const sky = () => `
+  <g class="drift">${cloud(250, 60, 1.1)}</g><g class="drift d2">${cloud(1300, 50, .9)}</g>
+  <g class="fly">${emo("🕊️", 0, 0, 36)}</g><g class="fly f2">${emo("🦅", 0, 0, 40)}</g>`;
+
+// ===================== The city map: three kingdoms + Dr. Balagan's volcano fortress =====================
+const KINGDOM_ART = {
+  math: () => `${emo("🏙️", 0, -60, 170)}${emo("🤖", -140, 10, 74, "bob")}${emo("🚀", 140, -40, 84)}${emo("🛰️", -130, -120, 54, "bob")}
+    <g class="glow-digits"><text x="70" y="-150" class="glow-num">1</text><text x="140" y="-120" class="glow-num">+</text><text x="-60" y="-160" class="glow-num">3</text></g>`,
+  lang: () => `${emo("🏰", 0, -60, 170)}${emo("📚", -140, 10, 70)}${emo("🌳", 150, 0, 80)}${emo("🦉", 140, -110, 54, "bob")}
+    <g class="glow-digits"><text x="-80" y="-160" class="glow-letter">א</text><text x="70" y="-170" class="glow-letter">ב</text><text x="-150" y="-110" class="glow-letter">ג</text></g>`,
+  en: () => `${emo("🎡", -20, -60, 160, "spin-slow-emo")}${emo("🎠", 140, 0, 80)}${emo("🚌", -150, 16, 70)}${emo("🎈", 160, -110, 54, "bob")}${emo("🎈", -170, -100, 46, "bob")}
+    <g class="glow-digits"><text x="60" y="-160" class="glow-abc">ABC</text></g>`,
+};
 
 function citySVG(player, openAll) {
   const fOpen = fortressOpen(player, openAll);
-  const road = roadHTML([[1660, 880], REALM_AT.lang, REALM_AT.en, REALM_AT.math, [560, 330], FORTRESS_SPOT]);
-  const realms = REALMS.map((r) => {
+  const road = glowingRoad([[1650, 960], REALM_AT.lang, REALM_AT.en, REALM_AT.math, [560, 420], FORTRESS_SPOT]);
+  const kingdoms = REALMS.map((r) => {
     const zs = realmZones(r.id);
     const played = zs.filter((z) => player.zones[z]).length;
-    return regionHTML({ id: r.id, kind: "realm", x: REALM_AT[r.id][0], y: REALM_AT[r.id][1], title: `${r.icon} ${r.title}`, color: r.color,
-      art: realmArt(r.id), open: true, count: `${played}/${zs.length}`, crown: rulerBeaten(player, r.id) });
+    return districtHTML({ id: r.id, kind: "realm", x: REALM_AT[r.id][0], y: REALM_AT[r.id][1], title: `${r.icon} ${r.title}`, color: r.color,
+      art: KINGDOM_ART[r.id](), open: true, count: `⭐ ${played}/${zs.length}`, crown: rulerBeaten(player, r.id) });
   }).join("");
-  return mapFrame(`
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#evilW)"/>
-    ${cloud(160, 70, .9)}${cloud(1450, 60, 1)}${cloud(1500, 960, .8)}
+  const [fx, fy] = FORTRESS_SPOT;
+  return `
+  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg world-svg wow" role="img" aria-label="מפת העיר">
+    <defs>${MAP_DEFS}
+      <linearGradient id="landCity" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset=".6" stop-color="#22c55e"/><stop offset="1" stop-color="#15803d"/></linearGradient>
+      <radialGradient id="evilGlow" cx="${fx}" cy="${fy}" r="420" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3b0764" stop-opacity=".95"/><stop offset=".55" stop-color="#581c87" stop-opacity=".55"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>
+      <linearGradient id="volcano" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e1b4b"/><stop offset="1" stop-color="#4c1d95"/></linearGradient>
+      <radialGradient id="lava"><stop offset="0" stop-color="#fde047"/><stop offset=".5" stop-color="#f97316"/><stop offset="1" stop-color="#dc2626" stop-opacity="0"/></radialGradient>
+    </defs>
+    ${seaAndIsland("url(#landCity)")}
+    ${seaLife()}
+    <!-- regions: tinted ground under each kingdom -->
+    <g opacity=".35"><ellipse cx="${REALM_AT.math[0]}" cy="${REALM_AT.math[1]}" rx="330" ry="230" fill="#60a5fa"/><ellipse cx="${REALM_AT.lang[0]}" cy="${REALM_AT.lang[1]}" rx="330" ry="230" fill="#fcd34d"/><ellipse cx="${REALM_AT.en[0]}" cy="${REALM_AT.en[1]}" rx="300" ry="170" fill="#f9a8d4"/></g>
+    <!-- the villain's volcano -->
+    <rect width="1600" height="1000" fill="url(#evilGlow)"/>
+    <path d="M${fx - 330} ${fy + 220} L${fx - 110} ${fy - 70} L${fx + 110} ${fy - 70} L${fx + 330} ${fy + 220}Z" fill="url(#volcano)" stroke="#111" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M${fx - 70} ${fy - 60} Q${fx - 90} ${fy + 60} ${fx - 150} ${fy + 210} M${fx + 60} ${fy - 60} Q${fx + 100} ${fy + 80} ${fx + 170} ${fy + 210}" stroke="#f97316" stroke-width="12" fill="none" stroke-linecap="round" class="lava-flow"/>
+    <ellipse cx="${fx}" cy="${fy - 60}" rx="160" ry="70" fill="url(#lava)" class="lava-glow"/>
+    ${emo("🏔️", fx - 400, fy + 120, 120)}${emo("🏔️", fx + 420, fy + 110, 110)}${emo("⛰️", fx - 300, fy + 200, 90)}${emo("⛰️", fx + 300, fy + 200, 90)}
+    <g class="storm"><path d="M${fx - 150} ${fy - 150} q-10 -40 40 -42 q16 -36 64 -18 q36 -24 66 12 q46 -4 38 42Z" fill="#334155" stroke="#111" stroke-width="4"/>
+      <path d="M${fx - 40} ${fy - 150} L${fx - 60} ${fy - 100} L${fx - 40} ${fy - 100} L${fx - 64} ${fy - 50} L${fx - 10} ${fy - 116} L${fx - 32} ${fy - 116} L${fx - 14} ${fy - 150}Z" fill="#fde047" stroke="#111" stroke-width="3" class="lightning"/></g>
+    <!-- forests, villages, fields -->
+    ${[[200, 330, 70], [270, 280, 80], [150, 430, 66], [330, 360, 60], [1380, 320, 78], [1440, 400, 66], [1320, 260, 60], [1100, 880, 66], [470, 880, 70], [560, 900, 56], [1500, 700, 60]].map(([x, y, s], i) => emo(i % 3 ? "🌲" : "🌳", x, y, s)).join("")}
+    ${emo("🏡", 1010, 470, 56)}${emo("🏘️", 620, 470, 62)}${emo("🏡", 1060, 680, 50)}${emo("🏘️", 540, 690, 54)}${emo("🌾", 230, 780, 56)}${emo("🌻", 290, 820, 44)}${emo("🌾", 1380, 790, 56)}${emo("🐄", 1440, 830, 44)}
+    ${sky()}
     ${road}
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
-    ${realms}
-    <g class="region fortress-spot ${fOpen ? "" : "locked"}" data-realm="fortress" transform="translate(${FORTRESS_SPOT[0]} ${FORTRESS_SPOT[1]}) scale(.8)" tabindex="0" role="button" aria-label="המבצר">
-      <g class="region-art">${PLACE_ART.fortress()}</g>
-      <g transform="translate(0 100)"><rect x="-150" y="-26" width="300" height="52" rx="14" fill="#7c3aed" stroke="${INK}" stroke-width="5"/>
-        <text y="12" text-anchor="middle" class="region-label">🏰 המבצר של ד״ר בלגן</text></g>
-      ${fOpen ? "" : `<text y="0" text-anchor="middle" font-size="70">🔒</text>`}
-      ${player.zones.fortress ? `<text x="110" y="-80" font-size="60" class="floaty">🏅</text>` : ""}
+    <!-- the fortress on the volcano -->
+    <g class="district fortress-spot ${fOpen ? "" : "locked"}" data-realm="fortress" transform="translate(${fx} ${fy - 20})" tabindex="0" role="button" aria-label="המבצר">
+      <g class="district-art" transform="scale(1.05)">${PLACE_ART.fortress()}</g>
+      ${fOpen ? "" : emo("🔒", 0, -30, 80)}
+      ${ribbonHTML("🏰 המבצר של ד״ר בלגן", "#7c3aed", 380, 70)}
+      ${player.zones.fortress ? emo("🏅", 150, -100, 64, "bob") : ""}
     </g>
-    <g transform="translate(1530 905)"><rect x="-70" y="-26" width="140" height="48" rx="12" fill="#22c55e" ${K}/><text y="8" text-anchor="middle" class="spot-label" fill="#fff">התחלה</text></g>`,
-    `<radialGradient id="evilW" cx="810" cy="150" r="360" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2e1065"/><stop offset=".6" stop-color="#581c87" stop-opacity=".7"/><stop offset="1" stop-color="#581c87" stop-opacity="0"/></radialGradient>`);
+    ${kingdoms}
+    <g transform="translate(1520 930)">${ribbonHTML("🚩 התחלה", "#16a34a", 170, -28)}</g>
+    <rect width="1600" height="1000" fill="url(#vignette)" pointer-events="none"/>
+    ${tokenHTML()}
+  </svg>`;
 }
 
 // ===================== A kingdom: its neighborhoods and its ruler's castle =====================
-const RULER_AT = [810, 250];
-const realmHoodSpots = (n) => (n === 2 ? [[1150, 740], [470, 740]] : [[1250, 720], [810, 790], [370, 720]]);
+const RULER_AT = [800, 250];
+const realmHoodSpots = (n) => (n === 2 ? [[1150, 720], [460, 720]] : [[1260, 690], [800, 790], [340, 690]]);
 
 function rulerCastleArt(realm) {
   const z = ZONES.find((x) => x.id === realm.ruler);
-  return `<g ${K}>
-      <ellipse cx="0" cy="40" rx="140" ry="36" fill="${realm.color}"/>
-      <rect x="-80" y="-40" width="160" height="80" fill="#e2e8f0"/>
-      <rect x="-110" y="-80" width="44" height="120" fill="#cbd5e1"/><rect x="66" y="-80" width="44" height="120" fill="#cbd5e1"/>
+  return `<g transform="translate(0 -10) scale(1.15)"><g ${K}>
+      <rect x="-80" y="-40" width="160" height="70" fill="#e2e8f0"/>
+      <rect x="-110" y="-80" width="44" height="110" fill="#cbd5e1"/><rect x="66" y="-80" width="44" height="110" fill="#cbd5e1"/>
       <path d="M-116 -80 L-88 -124 L-60 -80Z M60 -80 L88 -124 L116 -80Z" fill="${realm.color}"/>
       <path d="M-80 -40 v-14 h18 v14 h16 v-14 h18 v14 h16 v-14 h18 v14 h16 v-14 h18 v14" fill="#e2e8f0"/>
-      <path d="M-24 40 V4 Q0 -22 24 4 V40Z" fill="#334155"/>
+      <path d="M-24 30 V4 Q0 -22 24 4 V30Z" fill="#334155"/>
     </g>
-    <g transform="translate(0 -110) scale(.42)">${BOSS_ART[z.boss](5, 0).replace(/<svg[^>]*>/, "<g transform='translate(-100 -110)'>").replace("</svg>", "</g>")}</g>`;
+    <g transform="translate(0 -120) scale(.45)">${BOSS_ART[z.boss](5, 0).replace(/<svg[^>]*>/, "<g transform='translate(-100 -110)'>").replace("</svg>", "</g>")}</g></g>`;
 }
+
+// Landmarks of each neighborhood.
+const HOOD_LANDMARKS = {
+  harbor: [["⚓", 0, -40, 110], ["⛵", -130, -10, 70], ["🏝️", 130, -10, 70], ["🍰", 60, 20, 44]],
+  downtown: [["🏙️", 0, -50, 120], ["🚒", -130, 10, 62], ["🏟️", 130, 0, 66], ["🔬", 70, -110, 44]],
+  sky: [["🚀", 0, -50, 110], ["🪐", -130, -50, 70], ["❄️", 130, -20, 60], ["☄️", 100, -110, 48]],
+  town: [["🏘️", 0, -40, 110], ["📚", -130, 0, 64], ["🎪", 130, -20, 70], ["🦁", 60, 20, 44]],
+  woods: [["🌲", -40, -50, 110], ["🐉", 70, -40, 84], ["🍄", -140, 10, 54], ["🎵", 140, -100, 44]],
+  bay: [["🌊", 0, -30, 100], ["🐠", -130, -10, 62], ["📮", 130, -20, 62], ["🚂", 60, 30, 50]],
+  entown: [["🍎", -60, -40, 90], ["🐶", 70, -40, 86], ["🎨", -140, 10, 54], ["👋", 140, 0, 50]],
+  enpark: [["🔤", -40, -40, 92], ["🔟", 80, -40, 76], ["🧸", -140, 10, 58], ["🎈", 140, -90, 50]],
+};
+const landmarks = (hid) => (HOOD_LANDMARKS[hid] || []).map(([e, x, y, s], i) => emo(e, x, y, s, i === 0 ? "" : i % 2 ? "bob" : "")).join("");
+
+const REALM_LOOK = {
+  math: {
+    ground: ["#7dd3fc", "#0ea5e9", "#0369a1"],
+    deco: () => `<g stroke="#e0f2fe" stroke-width="3" opacity=".35" fill="none">${Array.from({ length: 12 }, (_, i) => `<path d="M${180 + i * 110} 120 V900 M140 ${160 + i * 70} H1460"/>`).join("")}</g>
+      ${emo("🏢", 200, 330, 110)}${emo("🏬", 330, 270, 90)}${emo("🏙️", 1320, 330, 120)}${emo("🏗️", 1440, 420, 80)}${emo("🛰️", 1150, 160, 60, "bob")}${emo("🪐", 330, 150, 76, "bob")}
+      ${emo("🤖", 540, 470, 64, "bob")}${emo("🚀", 1060, 450, 76)}${emo("💡", 200, 520, 50)}${emo("🔢", 1460, 560, 56)}
+      <g class="glow-digits"><text x="460" y="200" class="glow-num">7</text><text x="1180" y="560" class="glow-num">4</text><text x="230" y="640" class="glow-num">+</text></g>`,
+  },
+  lang: {
+    ground: ["#bef264", "#84cc16", "#4d7c0f"],
+    deco: () => `${[[180, 330, 80], [260, 280, 70], [140, 430, 64], [1380, 300, 80], [1460, 380, 66], [1320, 250, 60], [560, 330, 56]].map(([x, y, s], i) => emo(i % 2 ? "🌲" : "🌳", x, y, s)).join("")}
+      ${emo("🏡", 420, 430, 60)}${emo("🏰", 1180, 430, 90)}${emo("📖", 1440, 560, 70)}${emo("🦉", 580, 480, 52, "bob")}${emo("🌻", 230, 560, 46)}${emo("🌻", 300, 600, 40)}${emo("🍄", 1080, 300, 44)}
+      <path d="M1500 120 Q1300 220 1320 380 Q1340 520 1540 600" stroke="#111" stroke-width="40" fill="none"/><path d="M1500 120 Q1300 220 1320 380 Q1340 520 1540 600" stroke="#38bdf8" stroke-width="32" fill="none"/>
+      <g class="glow-digits"><text x="460" y="200" class="glow-letter">ש</text><text x="1060" y="560" class="glow-letter">ל</text><text x="230" y="660" class="glow-letter">ם</text></g>`,
+  },
+  en: {
+    ground: ["#fbcfe8", "#f472b6", "#be185d"],
+    deco: () => `<g opacity=".35">${Array.from({ length: 40 }, (_, i) => `<circle cx="${(i * 137) % 1300 + 150}" cy="${(i * 89) % 720 + 140}" r="7" fill="${["#fde047", "#22d3ee", "#a3e635", "#fff"][i % 4]}"/>`).join("")}</g>
+      ${emo("🎪", 220, 330, 110)}${emo("🍭", 380, 270, 72)}${emo("🎢", 1220, 400, 110)}${emo("🍦", 1400, 300, 80)}${emo("🎈", 150, 170, 56, "bob")}${emo("🎈", 1450, 160, 50, "bob")}${emo("🧸", 540, 470, 60)}${emo("🎠", 1440, 560, 64)}
+      <g class="glow-digits"><text x="460" y="200" class="glow-abc">A</text><text x="1080" y="560" class="glow-abc">Z</text><text x="230" y="640" class="glow-abc">Hi!</text></g>`,
+  },
+};
 
 function realmSVG(realmId, player, openAll) {
   const realm = REALMS.find((r) => r.id === realmId);
+  const look = REALM_LOOK[realmId];
   const spots = realmHoodSpots(realm.hoods.length);
-  const road = roadHTML([[1660, 880], ...spots, RULER_AT]);
+  const road = glowingRoad([[1650, 960], ...spots, RULER_AT]);
   const hoods = realm.hoods.map((hid, i) => {
     const h = NEIGHBORHOODS.find((x) => x.id === hid);
     const played = h.zones.filter((z) => player.zones[z]).length;
-    const stars = h.zones.reduce((s, z) => s + (player.zones[z] || 0), 0);
-    return regionHTML({ id: hid, x: spots[i][0], y: spots[i][1], title: `${h.icon} ${h.title}`, color: h.color, art: hoodArt(hid),
-      open: hoodOpen(player, hid, openAll), count: `${played}/${h.zones.length} ⭐${stars}` });
+    return districtHTML({ id: hid, kind: "hood", x: spots[i][0], y: spots[i][1], title: `${h.icon} ${h.title}`, color: h.color, art: landmarks(hid),
+      open: hoodOpen(player, hid, openAll), count: `⭐ ${played}/${h.zones.length}`, rx: 210, ry: 100 });
   }).join("");
   const rz = ZONES.find((x) => x.id === realm.ruler);
-  const ruler = regionHTML({ id: realm.ruler, kind: "ruler", x: RULER_AT[0], y: RULER_AT[1], title: `👑 ${rz.title}`, color: rz.color,
-    art: rulerCastleArt(realm), open: rulerOpen(player, realmId, openAll), crown: rulerBeaten(player, realmId) });
-  return mapFrame(`
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="${realm.color}" opacity=".18" clip-path="url(#islandClip)"/>
-    ${cloud(160, 70, .9)}${cloud(1450, 60, 1)}
+  const ruler = districtHTML({ id: realm.ruler, kind: "ruler", x: RULER_AT[0], y: RULER_AT[1], title: `👑 ${rz.title}`, color: rz.color,
+    art: rulerCastleArt(realm), open: rulerOpen(player, realmId, openAll), crown: rulerBeaten(player, realmId), rx: 230, ry: 110 });
+  return `
+  <svg viewBox="0 0 ${WORLD_W} ${WORLD_H}" class="map-svg world-svg wow" role="img" aria-label="${realm.title}">
+    <defs>${MAP_DEFS}
+      <linearGradient id="landRealm" x1="0" y1="0" x2="0" y2="1">${look.ground.map((c, i) => `<stop offset="${i / 2}" stop-color="${c}"/>`).join("")}</linearGradient>
+    </defs>
+    ${seaAndIsland("url(#landRealm)")}
+    ${seaLife()}
+    ${look.deco()}
+    ${sky()}
     ${road}
-    <rect width="${WORLD_W}" height="${WORLD_H}" fill="url(#dots)" pointer-events="none"/>
     ${hoods}${ruler}
-    <g transform="translate(1530 905)"><rect x="-70" y="-26" width="140" height="48" rx="12" fill="#22c55e" ${K}/><text y="8" text-anchor="middle" class="spot-label" fill="#fff">כניסה</text></g>`);
+    <g transform="translate(1520 930)">${ribbonHTML("🚩 כניסה", "#16a34a", 170, -28)}</g>
+    <rect width="1600" height="1000" fill="url(#vignette)" pointer-events="none"/>
+    ${tokenHTML()}
+  </svg>`;
 }
 
 // ===================== One neighborhood's own screen =====================

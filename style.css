@@ -969,3 +969,46 @@ button, .spot, .region, .maze-cell, .balloon, .fish, .meteor { touch-action: man
 .maker-preview { text-align: center; background: radial-gradient(circle, #fff, #e0e7ff); border: 5px solid var(--ink); border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); padding: 14px 24px; }
 .maker-title { font-family: var(--display); font-size: 40px; margin: 6px 0 0; }
 .custom-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 20px; }
+
+/* ===================== big maps, game-style (2026-11-16) ===================== */
+.emo { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; pointer-events: none; filter: drop-shadow(4px 6px 0 #0004); }
+.wow .district { cursor: pointer; outline: none; }
+.wow .district .district-art { transition: transform .25s; filter: none; }
+.wow .district:hover .district-art, .wow .district:focus .district-art { transform: translateY(-10px) scale(1.06); }
+.wow .district .district-glow { opacity: 0; transition: opacity .25s; }
+.wow .district:hover .district-glow, .wow .district:focus .district-glow { opacity: 1; }
+.wow .district[data-ruler] .district-glow { opacity: .8; animation: twinkle 2.4s ease-in-out infinite; }
+.wow .district.locked { cursor: not-allowed; }
+.wow .district.locked .district-art { filter: grayscale(.85) brightness(.8); }
+.ribbon-text { font-family: var(--display); font-size: 40px; fill: #fff; stroke: #111; stroke-width: 2px; paint-order: stroke; }
+.glow-num, .glow-letter, .glow-abc { font-family: Arial, "Rubik", sans-serif; font-weight: 900; font-size: 54px; fill: #fff; stroke: #111; stroke-width: 3px; paint-order: stroke; }
+.glow-num { fill: #7dd3fc; filter: drop-shadow(0 0 8px #38bdf8); }
+.glow-letter { fill: #fde68a; filter: drop-shadow(0 0 8px #f59e0b); }
+.glow-abc { fill: #fbcfe8; filter: drop-shadow(0 0 8px #ec4899); }
+.glow-digits { animation: bob 3s ease-in-out infinite; }
+.wow .bob { animation: bob 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.road-dash { animation: dashMove 1.2s linear infinite; }
+@keyframes dashMove { to { stroke-dashoffset: -64; } }
+.sea-waves { animation: waves 8s linear infinite; }
+@keyframes waves { to { transform: translateX(120px); } }
+.sail { animation: sail 7s ease-in-out infinite; }
+.sail.s2 { animation-duration: 9s; animation-delay: -3s; }
+.sail.s3 { animation-duration: 11s; animation-delay: -5s; }
+@keyframes sail { 0%, 100% { transform: translate(0, 0) rotate(-2deg); } 50% { transform: translate(18px, -6px) rotate(3deg); } }
+.jump { animation: jump 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes jump { 0%, 70%, 100% { transform: translateY(0) rotate(0); } 80% { transform: translateY(-30px) rotate(-20deg); } 90% { transform: translateY(-10px) rotate(10deg); } }
+.drift { animation: drift 40s linear infinite; }
+.drift.d2 { animation-duration: 55s; animation-delay: -20s; }
+@keyframes drift { from { transform: translateX(-200px); } to { transform: translateX(400px); } }
+.fly { animation: fly 22s linear infinite; }
+.fly.f2 { animation-duration: 30s; animation-delay: -12s; }
+@keyframes fly { from { transform: translate(-80px, 140px); } to { transform: translate(1700px, 60px); } }
+.lava-glow { animation: twinkle 2s ease-in-out infinite; }
+.lava-flow { animation: lava 2.4s ease-in-out infinite alternate; }
+@keyframes lava { from { stroke: #f97316; } to { stroke: #fde047; } }
+.lightning { animation: flashBolt 3s steps(1) infinite; }
+@keyframes flashBolt { 0%, 88%, 100% { opacity: 0; } 90%, 96% { opacity: 1; } }
+.spin-slow-emo { animation: none; }
+@media (prefers-reduced-motion: reduce) { .wow * { animation: none !important; } }
+
+.glow-abc { direction: ltr; unicode-bidi: bidi-override; }
